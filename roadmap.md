@@ -8,7 +8,7 @@
 3. github + push functionality
 
 # Phase1:
-1. node server up & able to use AI api 
+1. **Completed** node server up & able to use AI api  
 2. ability to switch between main & data AI
 3. basic UI (main box + buttons + text input)
 4. ai reply with json format -> let users make choices
