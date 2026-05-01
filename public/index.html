@@ -14,6 +14,9 @@
     <div class="input-group">
         <input type="text" id="userInput" placeholder="Enter your question..." onkeypress="checkEnter(event)">
         <button onclick="sendMessage()">Send</button>
+        <button onclick="applyChoice('buttonOne')" id="buttonOne">choice one</button>
+        <button onclick="applyChoice('buttonTwo')" id="buttonTwo">choice two</button>
+        <button onclick="applyChoice('buttonThree')" id="buttonThree">choice three</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
