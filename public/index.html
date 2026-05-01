@@ -8,15 +8,14 @@
 </head>
 <body>
 
-    <h2>AI Hello World</h2>
     <div id="chat-window">Connecting...</div>
 
     <div class="input-group">
-        <input type="text" id="userInput" placeholder="Enter your question..." onkeypress="checkEnter(event)">
-        <button onclick="sendMessage()">Send</button>
         <button onclick="applyChoice('buttonOne')" id="buttonOne">choice one</button>
         <button onclick="applyChoice('buttonTwo')" id="buttonTwo">choice two</button>
         <button onclick="applyChoice('buttonThree')" id="buttonThree">choice three</button>
+        <input type="text" id="userInput" placeholder="Enter Action" onkeypress="checkEnter(event)">
+        <button onclick="sendMessage()" id="buttonSend">Send</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
