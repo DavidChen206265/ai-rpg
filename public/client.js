@@ -5,7 +5,26 @@ const userInput = document.getElementById("userInput");
 
 // chat history
 let chatHistory = new Set();
-let systemPrompt = "The player is in a magical maze, trying to reach the center. The player must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the player. You are a game master, running a fantasy game. Based on the previous quest information, generate a description of the room the player is currently in.";
+let systemPrompt = `The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
+
+You are a game master, running a fantasy game. Based on the previous quest information, generate a description of the room the user is currently in.
+
+Your response MUST be in this format: Current time, location + main descriptions(story's progress) + "<choices>" + json of three choices + "</choices>"
+
+json format:
+  {
+    choice1: "[Choice 1] Choice 1 text.",
+    choice2: "[Choice 2] Choice 2 text.",
+    choice3: "[Choice 3] Choice 3 text."
+  }`;
+
+// choice system
+let choices = ["Choice 1", "Choice2", "Choice3"];
+let choice1 = document.getElementById("choice-1");
+let choice2 = document.getElementById("choice-2");
+let choice3 = document.getElementById("choice-3");
+
+
 
 // connected to the server
 socket.on("connect", () => {
@@ -20,6 +39,13 @@ socket.on("ai_response", (msg) => {
     chatWindow.innerHTML += `<div class="msg-ai" id="loading"><strong>AI:</strong> ${msg}</div>`;
   } else {
 
+    console.log("msg: " + msg);
+
+
+    // update choices
+    msg = updateChoices(msg);
+
+    // show message to user
     const loadingNode = document.getElementById("loading");
     if (loadingNode) loadingNode.remove(); // remove loading sign
     chatWindow.innerHTML += `<div class="msg-ai"><strong>AI:</strong> ${msg}</div>`;
@@ -54,7 +80,7 @@ function sendMessage() {
 
   // log the whole prompt
   console.log("Prompt " + Math.floor(chatHistory.size / 2) + ": " + request);
-  
+
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
   // send text to server
@@ -70,3 +96,50 @@ function sendMessage() {
 function checkEnter(e) {
   if (e.key === "Enter") sendMessage();
 }
+
+function applyChoice(choiceNumber) {
+  if (!choiceNumber) return;
+
+  let selectedChoiceText = "";
+
+  if (choiceNumber === 1 && choice1.innerText) selectedChoiceText = choice1.innerText;
+  else if (choiceNumber === 2 && choice2.innerText) selectedChoiceText = choice2.innerText;
+  else if (choiceNumber === 3 && choice3.innerText) selectedChoiceText = choice3.innerText;
+
+  // update userInput
+  userInput.innerText = selectedChoiceText;
+}
+
+function extractJsonFromString(text, start, end) {
+
+  const result = text.split(start)[1].split(end)[0];
+
+  console.log('Extracted JSON: ' + result);
+
+  // convert to json and return
+  return JSON.parse(result);
+}
+
+function cutOffString(text, start, end) {
+
+  const result = text.split(start)[0] + text.split(end)[1];
+
+  console.log('Cutoff: ' + result);
+
+  // convert to json and return
+  return result;
+}
+
+function updateChoices(response) {
+
+  const choicesStart = "<choices>";
+  const choicesEnd = "</choices>";
+
+  const choicesJson = extractJsonFromString(response, choicesStart, choicesEnd);
+  choice1.innerText = choicesJson.choice1;
+  choice2.innerText = choicesJson.choice2;
+  choice3.innerText = choicesJson.choice3;
+
+  return cutOffString(response, choicesStart, choicesEnd);
+}
+
