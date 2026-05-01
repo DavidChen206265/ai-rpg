@@ -10,7 +10,7 @@ let systemPrompt = "The player is in a magical maze, trying to reach the center.
 // connected to the server
 socket.on("connect", () => {
   chatWindow.innerHTML =
-    '<div style="color: green;">System: Conncected to the server.</div>';
+    '<div>System: Connected to the server.</div>';
 });
 
 // listen for AI response from server
