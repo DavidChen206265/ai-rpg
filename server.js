@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
       }
 
       const data = await response.json();
-
+      console.log(data);
       // get the message
       const aiMessage = data.choices[0].message.content;
 

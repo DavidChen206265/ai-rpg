@@ -18,9 +18,24 @@ body {
 }
 
 .input-group {
-    display: flex;
+    display: grid;
+    grid-template-areas:'one one one' 'two two two' 'three three three' 'input input send';
     gap: 10px;
 }
+
+#buttonSend{
+    grid-area:send;
+}
+#buttonOne{
+    grid-area:one;
+}
+#buttonTwo{
+    grid-area:two;
+}
+#buttonThree{
+    grid-area:three;
+}
+
 
 input[type="text"] {
     flex: 1;
@@ -28,6 +43,7 @@ input[type="text"] {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
+    grid-area:input;
 }
 
 button {
@@ -50,7 +66,6 @@ button:hover {
 }
 
 .msg-ai {
-    color: #333;
     margin-bottom: 10px;
     border-bottom: 1px dashed #ddd;
     padding-bottom: 10px;
