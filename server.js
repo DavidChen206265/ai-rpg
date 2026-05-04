@@ -10,7 +10,7 @@ const io = new Server(server);
 app.use(express.static("public"));
 
 // AI API request variables
-const API_BASE_URL = "https://api.cetaceang.qzz.io/v1/chat/completions";
+const API_BASE_URL = "https://gcli.ggchan.dev/v1/chat/completions";
 const MODEL_ID = "gemini-3.1-pro-preview";
 
 // after a client connected
