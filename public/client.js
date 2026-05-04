@@ -37,10 +37,11 @@ socket.on("ai_response", (msg) => {
 
   if (msg === "Waiting...") {
     chatWindow.innerHTML += `<div class="msg-ai" id="loading"><strong>AI:</strong> ${msg}</div>`;
+  } else if (msg.startsWith("[Error]")) {
+    chatWindow.innerHTML += `<div class="msg-ai" id="loading"><strong>AI:</strong> ${msg}</div>`;
   } else {
 
     console.log("msg: " + msg);
-
 
     // update choices
     msg = updateChoices(msg);
@@ -87,6 +88,10 @@ function sendMessage() {
   socket.emit("ask_ai", request);
 
   // add prompt to history
+  // add initial instructions
+  if (chatHistory.size === 0) {
+    text = systemPrompt;
+  }
   chatHistory.add("Prompt " + Math.floor(chatHistory.size / 2) + ": " + text);
 
   userInput.value = "";
@@ -100,17 +105,31 @@ function checkEnter(e) {
 function applyChoice(choiceNumber) {
   if (!choiceNumber) return;
 
+  console.log("applyChoice " + choiceNumber);
+
+
   let selectedChoiceText = "";
 
-  if (choiceNumber === 1 && choice1.innerText) selectedChoiceText = choice1.innerText;
-  else if (choiceNumber === 2 && choice2.innerText) selectedChoiceText = choice2.innerText;
-  else if (choiceNumber === 3 && choice3.innerText) selectedChoiceText = choice3.innerText;
+  if (choiceNumber === 1 && choice1.innerText) {
+    selectedChoiceText = choice1.innerText;
+  }
+  else if (choiceNumber === 2 && choice2.innerText) {
+    selectedChoiceText = choice2.innerText;
+  }
+  else if (choiceNumber === 3 && choice3.innerText) {
+    selectedChoiceText = choice3.innerText;
+  } 
 
   // update userInput
-  userInput.innerText = selectedChoiceText;
+  userInput.value = selectedChoiceText;
+
+  // console.log("InputText: " + userInput.value);
 }
 
 function extractJsonFromString(text, start, end) {
+
+  console.log("extractJsonFromString - text: " + text);
+
 
   const result = text.split(start)[1].split(end)[0];
 

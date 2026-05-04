@@ -26,13 +26,13 @@ body {
 #buttonSend{
     grid-area:send;
 }
-#buttonOne{
+#choice-1{
     grid-area:one;
 }
-#buttonTwo{
+#choice-2{
     grid-area:two;
 }
-#buttonThree{
+#choice-3{
     grid-area:three;
 }
 
