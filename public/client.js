@@ -4,8 +4,12 @@ const chatWindow = document.getElementById("chat-window");
 const userInput = document.getElementById("userInput");
 
 // chat history
-let chatHistory = new Set();
-let systemPrompt = `The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
+let chatHistory = [];
+let eventMemory = new Set();
+
+let systemPrompt = `Highest Priority: 
+
+The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
 
 You are a game master, running a fantasy game. Based on the previous quest information, generate a description of the room the user is currently in.
 
@@ -41,7 +45,7 @@ socket.on("ai_response", (msg) => {
     chatWindow.innerHTML += `<div class="msg-ai" id="loading"><strong>AI:</strong> ${msg}</div>`;
   } else {
 
-    console.log("msg: " + msg);
+    console.log("Raw Msg: \n\n" + msg);
 
     // update choices
     msg = updateChoices(msg);
@@ -52,47 +56,58 @@ socket.on("ai_response", (msg) => {
     chatWindow.innerHTML += `<div class="msg-ai"><strong>AI:</strong> ${msg}</div>`;
 
     // add response to history
-    chatHistory.add("Response " + Math.floor(chatHistory.size / 2) + ": " + msg);
+    chatHistory[chatHistory.length] = "Response " + Math.floor(chatHistory.size / 2) + ": " + msg;
   }
   chatWindow.scrollTop = chatWindow.scrollHeight;
+});
+
+socket.on("data_response", (msg) => {
+  if (msg.startsWith("[Error]")) {
+    chatWindow.innerHTML += `<div class="msg-ai" id="loading"><strong>Data AI:</strong> ${msg}</div>`;
+  }
+
+  eventMemory.add(msg);
+
+  console.log("memory updated: \n\n" + msg);
+
 });
 
 // send message to server
 function sendMessage() {
   let text = userInput.value.trim();
-  let request = "";
-  if (chatHistory.size !== 0 & !text) return;
-  else if (chatHistory.size === 0) {
-    text = systemPrompt;
-  }
+  let request = systemPrompt;
 
+  // check for empty input
+  if (chatHistory.length !== 0 & !text) return;
+ 
   // give AI the chat history
-  request = "Current conversation: " + text + " Chat history: ";
+  request += "\n\nCurrent conversation: " + text + "\n\n";
 
-  // don't show systemPrompt
-  if (chatHistory.size === 0) text = "Game Start";
+  // initialize game
+  if (chatHistory.length === 0) text = "Game Start";
 
-  for (const x of chatHistory) {
-    request += " [" + x + "] ";
+  // add in permanent memory
+  request += "\n\nImportant Memories: \n\n";
+  for (const x of eventMemory) {
+    request += "[" + x + "] \n\n";
   }
+
+  // add in the last conversation's original text to make it smoother
+  request += "\n\nLast Conversation: " + chatHistory[chatHistory.length - 2] + " " + chatHistory[chatHistory.length - 1];
 
   // show user's message in chatWindow
   chatWindow.innerHTML += `<div class="msg-user"><strong>You:</strong> ${text}</div>`;
 
   // log the whole prompt
-  console.log("Prompt " + Math.floor(chatHistory.size / 2) + ": " + request);
+  console.log("Prompt " + Math.floor(chatHistory.length / 2) + ": \n\n" + request);
 
   chatWindow.scrollTop = chatWindow.scrollHeight;
 
   // send text to server
-  socket.emit("ask_ai", request);
+  socket.emit("ask_ai", request, text);
 
-  // add prompt to history
-  // add initial instructions
-  if (chatHistory.size === 0) {
-    text = systemPrompt;
-  }
-  chatHistory.add("Prompt " + Math.floor(chatHistory.size / 2) + ": " + text);
+  // update chatHistory with text
+  chatHistory[chatHistory.length] = "Prompt " + Math.floor(chatHistory.size / 2) + ": " + text;
 
   userInput.value = "";
 }
@@ -104,9 +119,6 @@ function checkEnter(e) {
 
 function applyChoice(choiceNumber) {
   if (!choiceNumber) return;
-
-  console.log("applyChoice " + choiceNumber);
-
 
   let selectedChoiceText = "";
 
@@ -122,18 +134,14 @@ function applyChoice(choiceNumber) {
 
   // update userInput
   userInput.value = selectedChoiceText;
-
-  // console.log("InputText: " + userInput.value);
 }
 
 function extractJsonFromString(text, start, end) {
 
-  console.log("extractJsonFromString - text: " + text);
-
 
   const result = text.split(start)[1].split(end)[0];
 
-  console.log('Extracted JSON: ' + result);
+  console.log('Extracted JSON: \n\n' + result);
 
   // convert to json and return
   return JSON.parse(result);
@@ -142,8 +150,6 @@ function extractJsonFromString(text, start, end) {
 function cutOffString(text, start, end) {
 
   const result = text.split(start)[0] + text.split(end)[1];
-
-  console.log('Cutoff: ' + result);
 
   // convert to json and return
   return result;
