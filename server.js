@@ -21,8 +21,8 @@ io.on("connection", (socket) => {
   // ask AI
   socket.on("ask_ai", async (prompt, currentInput) => {
     try {
-      // send back the waiting status
-      socket.emit("ai_response", "Waiting...");
+      // Notify the client that the stream is starting
+      socket.emit("ai_stream", "start");
 
       // send a request and wait for the response
       const response = await fetch(API_BASE_URL, {
@@ -34,6 +34,7 @@ io.on("connection", (socket) => {
         body: JSON.stringify({
           model: MAIN_MODEL_ID,
           messages: [{ role: "user", content: prompt }],
+          stream: true, // 1. Tell the API to stream the response
         }),
       });
 
@@ -41,20 +42,52 @@ io.on("connection", (socket) => {
         throw new Error(`API request failed, status code: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log(data);
-      // get the message
-      const aiMessage = data.choices[0].message.content;
+      // 2. Set up a decoder and a buffer to handle partial chunks
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let fullAiMessage = ""; // Accumulator for the final summary
 
-      // send back the response
-      socket.emit("ai_response", aiMessage);
+      // 3. Iterate asynchronously over the incoming stream
+      for await (const chunk of response.body) {
+        buffer += decoder.decode(chunk, { stream: true });
+        const lines = buffer.split("\n");
 
-      // conversation summarization
-      summarizeData(socket, currentInput, aiMessage);
+        // The last line might be incomplete, keep it in the buffer for the next chunk
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (line.trim() === "") continue;
+
+          if (line.startsWith("data: ")) {
+            const dataStr = line.replace("data: ", "").trim();
+
+            // Standard OpenAI-compatible API termination signal
+            if (dataStr === "[DONE]") break;
+
+            try {
+              const data = JSON.parse(dataStr);
+              // In a stream, the data is typically inside `delta` rather than `message`
+              const delta = data.choices[0]?.delta?.content;
+
+              if (delta) {
+                fullAiMessage += delta;
+                // 4. Emit each piece of text as soon as it arrives
+                socket.emit("ai_stream", `[Chunk]: ${delta}`);
+              }
+            } catch (e) {
+              console.error("Error parsing stream chunk:", e, line);
+            }
+          }
+        }
+      }
+
+      // 5. Notify the client the stream is complete and run your summary
+      socket.emit("ai_stream", "end");
+      summarizeData(socket, currentInput, fullAiMessage);
 
     } catch (error) {
       console.error("API error:", error);
-      socket.emit("ai_response", `[Error]: ${error.message}`);
+      socket.emit("ai_stream", `[Error]: ${error.message}`);
     }
   });
 
@@ -67,7 +100,7 @@ io.on("connection", (socket) => {
 // request data summarization
 async function summarizeData(socket, currentInput, response) {
 
-  let prompt = "Summarize and organize the following conversation for AI to read in A FEW SHORT AND CONCISE SENTENCES. Including settings, time, location, important events, interactions, characters. "; 
+  let prompt = "Summarize and organize the following conversation for AI to read in A FEW SHORT AND CONCISE SENTENCES. Including settings, time, location, important events, interactions, characters. ";
 
   prompt += "[User: ] " + currentInput;
   prompt += "\n\n ";
