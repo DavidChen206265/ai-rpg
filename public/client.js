@@ -61,7 +61,9 @@ function selectCharacter(char) {
     }
     currenthealth = health;
     document.getElementById("healthbar").innerHTML = currenthealth + "/" + health;
-    systemPrompt = `The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
+    systemPrompt = `Highest Priority:
+    
+    The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
 
     You are a game master, running a fantasy game. The user's character is ${chardesc} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in.
     
