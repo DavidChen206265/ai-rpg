@@ -100,12 +100,13 @@ button:hover {
 #healthcontainer{
     width:100%;
     overflow:hidden;
-    background-color:black;
+    background-color:#7e7e7e;
     height:30px;
+    margin-top: 10px;
+    border-radius:5px;
 }
 #healthmover{
     width:100%;
     background-color:red;
     height:30px;
-    transform:translate(-30%);
 }
