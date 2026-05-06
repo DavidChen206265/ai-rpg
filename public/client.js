@@ -31,6 +31,8 @@ let choice1 = document.getElementById("choice-1");
 let choice2 = document.getElementById("choice-2");
 let choice3 = document.getElementById("choice-3");
 
+let currentResponse = "";
+
 let gameend = false;
 let health = 10;
 let currenthealth = 10;
@@ -68,6 +70,8 @@ function selectCharacter(char) {
     You are a game master, running a fantasy game. The user's character is ${chardesc} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in.
     
     Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and if the game is over and if any health is lost and if any health is gained + "</choices>"
+
+    ONLY RESPOND FOR THE CURRENT CONVERSATION!!!
     
     json format:
       {
@@ -89,26 +93,40 @@ socket.on("connect", () => {
 });
 
 // listen for AI response from server
-socket.on("ai_response", (msg) => {
+socket.on("ai_stream", (msg) => {
 
-  if (msg === "Waiting...") {
-    chatWindow.innerHTML += `<div class="msg-ai" id="loading">${msg}</div>`;
+  if (msg === "on") {
+    chatWindow.innerHTML = `<div class="msg-ai" id="loading">${msg}</div>`;
   } else if (msg.startsWith("[Error]")) {
     chatWindow.innerHTML += `<div class="msg-ai" id="loading">${msg}</div>`;
-  } else {
+  } else if (msg.startsWith("[Chunk]")) {
 
-    console.log("Raw Msg: \n\n" + msg);
-
-    // update choices
-    msg = updateChoices(msg);
+    // update currentResponse
+    currentResponse += msg.slice(9);
 
     // show message to user
     const loadingNode = document.getElementById("loading");
     if (loadingNode) loadingNode.remove(); // remove loading sign
-    chatWindow.innerHTML += `<div class="msg-ai">${msg}</div>`;
 
+    chatWindow.innerHTML = `<div class="msg-ai">${currentResponse}</div>`;
+
+  } else if (msg === 'end'){
+
+    console.log("Raw Msg: \n\n" + currentResponse);
+
+    // update choices
+    currentResponse = updateChoices(currentResponse);
+
+    // show message to user
+    const loadingNode = document.getElementById("loading");
+    if (loadingNode) loadingNode.remove(); // remove loading sign
+
+    chatWindow.innerHTML = `<div class="msg-ai">${currentResponse}</div>`;
     // add response to history
-    chatHistory[chatHistory.length] = "Response " + Math.floor(chatHistory.size / 2) + ": " + msg;
+    chatHistory[chatHistory.length] = "Response " + Math.floor(chatHistory.size / 2) + ": " + currentResponse;
+
+    // reset currentResponse
+    currentResponse = "";
   }
   chatWindow.scrollTo({top:0, behavior:'auto'});
 });
