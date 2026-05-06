@@ -251,26 +251,3 @@ function updateChoices(response) {
 
   return cutOffString(response, choicesStart, choicesEnd);
 }
-
-function debug(amount){
-  currenthealth = currenthealth + amount
-
-  if(currenthealth > health){
-    currenthealth = health;
-  };
-
-  movepercent = 100 - (100 * (currenthealth / health))
-  document.getElementById("healthmover").style.transform = "translate(-" + movepercent + "%)";
-
-  if(movepercent > 40){
-    document.getElementById("healthbar").style.color = "black";
-  }else{
-    document.getElementById("healthbar").style.color = "white";
-  };
-
-  document.getElementById("healthbar").innerHTML = currenthealth + "/" + health;
-  if(currenthealth < 0){
-    gameend = true;
-    document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
-  };
-}
