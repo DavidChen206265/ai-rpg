@@ -18,9 +18,15 @@ body {
 }
 
 .input-group {
-    display: grid;
     grid-template-areas:'one one one' 'two two two' 'three three three' 'input input send';
     gap: 10px;
+}
+#inputBox{
+    display:none;
+}
+
+#buttonStart{
+    width:100%;
 }
 
 #buttonSend{
@@ -36,6 +42,19 @@ body {
     grid-area:three;
 }
 
+#characterSelect{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+    margin:10px;
+}
+
+#char1{
+    background-color:#0056b3;
+}
+#char3{
+    background-color:#0056b3;
+}
 
 input[type="text"] {
     flex: 1;
@@ -69,4 +88,24 @@ button:hover {
     margin-bottom: 10px;
     border-bottom: 1px dashed #ddd;
     padding-bottom: 10px;
+}
+
+#healthbar{
+    width:100%;
+    text-align:center;
+    color:white;
+    height:30px;
+    transform:translateY(-28px);
+}
+#healthcontainer{
+    width:100%;
+    overflow:hidden;
+    background-color:black;
+    height:30px;
+}
+#healthmover{
+    width:100%;
+    background-color:red;
+    height:30px;
+    transform:translate(-30%);
 }

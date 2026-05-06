@@ -10,13 +10,24 @@
 
     <div id="chat-window">Connecting...</div>
 
-    <div class="input-group">
+    <div class="input-group" id="inputBox">
         
         <button onclick="applyChoice(1)" id="choice-1">choice one</button>
         <button onclick="applyChoice(2)" id="choice-2">choice two</button>
         <button onclick="applyChoice(3)" id="choice-3">choice three</button>
         <input type="text" id="userInput" placeholder="Enter Action" onkeypress="checkEnter(event)">
         <button onclick="sendMessage()" id="buttonSend">Send</button>
+    </div>
+    <div id="characterSelect">
+        <button onclick="selectCharacter(1)" id="char1">Fitzgerald</button>
+        <button onclick="selectCharacter(2)" id="char2">Wilde</button>
+        <button onclick="selectCharacter(3)" id="char3">Burgess</button>
+    </div>
+    <button onclick="sendMessage()" id="buttonStart">Start</button>
+    <div id="healthcontainer">
+        
+        <div id="healthmover">.</div>
+        <div id="healthbar">10/10</div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
