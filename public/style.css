@@ -89,3 +89,23 @@ button:hover {
     border-bottom: 1px dashed #ddd;
     padding-bottom: 10px;
 }
+
+#healthbar{
+    width:100%;
+    text-align:center;
+    color:white;
+    height:30px;
+    transform:translateY(-28px);
+}
+#healthcontainer{
+    width:100%;
+    overflow:hidden;
+    background-color:black;
+    height:30px;
+}
+#healthmover{
+    width:100%;
+    background-color:red;
+    height:30px;
+    transform:translate(-30%);
+}
