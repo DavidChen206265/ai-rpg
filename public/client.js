@@ -7,23 +7,7 @@ const userInput = document.getElementById("userInput");
 let chatHistory = [];
 let eventMemory = new Set();
 
-let systemPrompt = `Highest Priority: 
-
-The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
-
-You are a game master, running a fantasy game. The user's character is Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in.
-
-Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and if the game is over and if any health is lost and if any health is gained + "</choices>"
-
-json format:
-  {
-    choice1: "Choice 1 text.",
-    choice2: "Choice 2 text.",
-    choice3: "Choice 3 text.",
-    gameOver: "1" //if the game is over, 0. if the game is ongoing, 1.
-    healthLost: 0 //how many hit points the user loses if they are hurt (integer, whole numbers only).
-    healthGained: 0 //how many hit points the user gains if they are healed (integer, whole numbers only).
-  }`;
+let systemPrompt = ``;
 
 // choice system
 let choices = ["Choice 1", "Choice2", "Choice3"];
@@ -36,6 +20,8 @@ let currentResponse = "";
 let gameend = false;
 let health = 10;
 let currenthealth = 10;
+let progression = 1;
+let luck = 1;
 
 let chardesc = "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total." //by default you play as wilde, so this should be the same as the wilde info
 
@@ -61,15 +47,20 @@ function selectCharacter(char) {
       document.getElementById("char1").style.backgroundColor = "#0056b3"
       health = 25;
     }
+    document.getElementById("buttonStart").style.display = "block";
     currenthealth = health;
     document.getElementById("healthbar").innerHTML = currenthealth + "/" + health;
-    systemPrompt = `Highest Priority:
-    
-    The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user.
+    updateSystemPrompt(chardesc, progression);
+}
 
-    You are a game master, running a fantasy game. The user's character is ${chardesc} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in.
+function updateSystemPrompt(chardesc1, progression1){
+  systemPrompt = `Highest Priority:
     
-    Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and if the game is over and if any health is lost and if any health is gained + "</choices>"
+    The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before you can reach the center. They are currently in room ${progression1} of 4. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry goblin who will fight the user. When the user enters the center of the maze (the room after room 4) they have won and the game is over.
+
+    You are a game master, running a fantasy game. The user's character is ${chardesc1} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in.
+    
+    Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and if the game is over and if any health is lost and if any health is gained and if they have progressed a room + "</choices>"
 
     ONLY RESPOND FOR THE CURRENT CONVERSATION!!!
     
@@ -78,13 +69,12 @@ function selectCharacter(char) {
         choice1: "Choice 1 text.",
         choice2: "Choice 2 text.",
         choice3: "Choice 3 text.",
-        gameOver: "1" //if the game is over, 0. if the game is ongoing, 1.
+        gameOver: 1 //if the game is over, 0. if the game is ongoing, 1 (integer, whole numbers only).
         healthLost: 0 //how many hit points the user loses if they are hurt (integer, whole numbers only).
         healthGained: 0 //how many hit points the user gains if they are healed (integer, whole numbers only).
+        progression: 0 //if the user has progressed to the next room, 1. If they remain in the same room, 0. (1 or 0 only).
       }`
 }
-
-
 
 // connected to the server
 socket.on("connect", () => {
@@ -139,17 +129,36 @@ socket.on("data_response", (msg) => {
   eventMemory.add(msg);
 
   console.log("memory updated: \n\n" + msg);
+  document.getElementById("choice-1").disabled = false;
+  document.getElementById("choice-2").disabled = false;
+  document.getElementById("choice-3").disabled = false;
+  document.getElementById("buttonSend").disabled = false;
 
 });
 
 // send message to server
 function sendMessage() {
+  document.getElementById("healthcontainer").style.display = "block";
   document.getElementById("buttonStart").style.display = "none";
   document.getElementById("characterSelect").style.display = "none";
   document.getElementById("inputBox").style.display = "grid";
+  document.getElementById("choice-1").disabled = true;
+  document.getElementById("choice-2").disabled = true;
+  document.getElementById("choice-3").disabled = true;
+  document.getElementById("buttonSend").disabled = true;
   chatWindow.innerHTML = "";
   let text = userInput.value.trim();
   let request = systemPrompt;
+
+  //add luck modifier
+  luck = Math.floor(Math.random() * 5);
+  if(luck == 0){ //unlucky
+    request += "\n\n User luck: Unlucky. The action the user just tried to do will end in failure"
+  }
+   if(luck == 4){ //lucky
+     request += "\n\n User luck: Lucky. The action the user has just tried to do will brilliantly succeed, unless it is impossible to the user to do."
+   }
+  
 
   // check for empty input
   if (chatHistory.length !== 0 & !text) return;
@@ -244,9 +253,10 @@ function updateChoices(response) {
   choice1.innerText = choicesJson.choice1;
   choice2.innerText = choicesJson.choice2;
   choice3.innerText = choicesJson.choice3;
-  if(choicesJson.gameOver == "0"){
+  if(choicesJson.gameOver == 0 || choicesJson.gameOver == "0"){
     gameend = true;
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
+    document.getElementById("healthcontainer").style.display = "none";
   }
   currenthealth = currenthealth - choicesJson.healthLost + choicesJson.healthGained
 
@@ -267,7 +277,14 @@ function updateChoices(response) {
   if(currenthealth < 0){
     gameend = true;
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
+    document.getElementById("healthcontainer").style.display = "none";
   };
+
+  if(choicesJson.progression == 1 || choicesJson.progression == "1"){
+    progression++;
+  }
+  console.log(progression);
+  updateSystemPrompt(chardesc, progression);
 
   return cutOffString(response, choicesStart, choicesEnd);
 }
