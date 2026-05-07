@@ -11,8 +11,8 @@ app.use(express.static("public"));
 
 // AI API request variables
 const API_BASE_URL = "https://gcli.ggchan.dev/v1/chat/completions";
-const MAIN_MODEL_ID = "gemini-3.1-pro-preview";
-const DATA_MODEL_ID = "gemini-3-flash-preview";
+const MAIN_MODEL_ID = "gemini-3.1-pro-preview"; 
+const DATA_MODEL_ID = "gemini-3-flash-preview"; 
 
 // after a client connected
 io.on("connection", (socket) => {
