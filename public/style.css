@@ -44,7 +44,7 @@ body {
 }
 
 #characterSelect{
-    display:grid;
+    display:none;
     grid-template-columns:1fr 1fr 1fr;
     gap:10px;
     margin:10px;
@@ -114,4 +114,42 @@ button:hover {
     width:100%;
     background-color:red;
     height:30px;
+}
+
+#questSelect{
+    text-align:center;
+    display:grid;
+    grid-template-areas: 'quest1 quest2 quest3' 'questblurb questblurb questblurb' 'amaze amaze amaze';
+    gap:10px;
+}
+#quest1{
+    background-color:#0056b3;
+    grid-area:quest1;
+}
+#quest2{
+    background-color:#0056b3;
+    grid-area:quest2;
+}
+#quest3{
+    background-color:#0056b3;
+    grid-area:quest3
+}
+#confirmbtn{
+    display:none;
+    grid-area:amaze;
+}
+#questblurb{
+    display:none;
+    grid-area:questblurb
+}
+#characterblurb{
+    text-align:center;
+    grid-column: 2 / 4;
+    display:none;
+}
+#characterprofile{
+    grid-column: 1 / 1;
+    grid-row:2;
+    background-color:blue;
+    display:none;
 }
