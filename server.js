@@ -7,6 +7,20 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+const { MongoClient, ServerApiVersion } = require('mongodb');
+
+// Pull the connection string from your .env file
+const uri = process.env.MONGODB_URI;
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
 app.use(express.static("public"));
 
 // AI API request variables
@@ -14,9 +28,13 @@ const API_BASE_URL = "https://gcli.ggchan.dev/v1/chat/completions";
 const MAIN_MODEL_ID = "gemini-3.1-pro-preview"; 
 const DATA_MODEL_ID = "gemini-3-flash-preview"; 
 
+runDB().catch(console.dir);
+
 // after a client connected
 io.on("connection", (socket) => {
   console.log("A client has connected.");
+
+  
 
   // ask AI
   socket.on("ask_ai", async (prompt, currentInput) => {
@@ -144,3 +162,25 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is up, visit http://localhost:${PORT}`);
 });
+
+async function runDB() {
+  try {
+    // Connect the client to the VPS server
+    await client.connect();
+    
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB on db.davidchen.me!");
+
+    // --- YOUR APP LOGIC GOES HERE ---
+    // Example: const myDatabase = client.db("myGameData");
+    // Example: const usersCollection = myDatabase.collection("users");
+
+  } catch (error) {
+    console.error("Connection failed! Check your IP, UFW firewall, or password.", error);
+  } finally {
+    // Ensures that the client will close when you finish/error
+    // (In a continuous web server, you would leave this open)
+    await client.close();
+  }
+}
