@@ -23,34 +23,40 @@ let currenthealth = 10;
 let progression = 1;
 let luck = 1;
 
-let chardesc = "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total." //by default you play as wilde, so this should be the same as the wilde info
+let luck1 = 10;
+let luck2 = 10;
+let luck3 = 10;
+let randomnumber = 10;
+let luckmessage = "";
+
+let chardesc = "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total. They start with light leather armor, a bow, arrows, and a small dagger in their boot." //by default you play as wilde, so this should be the same as the wilde info
 
 function selectCharacter(char) {
     if(char == 1){ //Wizard
-      chardesc = "Fitzgerald, an aspiring wizard. They have great knowledge of most magic, and tend to use magic instead of physical acts. They can cast most magic, but high level spells drain their energy, so they are used sparingly. While they aren't old, they don't have much defense or stamina, and are not well suited for strength based activity. Their magical prowess makes up for their lack of strength however. They have 10 hit points total."
+      chardesc = "Fitzgerald, an aspiring wizard. They have great knowledge of most magic, and tend to use magic instead of physical acts. They can cast most magic, but high level spells drain their energy, so they are used sparingly. While they aren't old, they don't have much defense or stamina, and are not well suited for strength based activity. Their magical prowess makes up for their lack of strength however. They have 10 hit points total. They start with their custom tailored wizard robes, their spellbook, and an emergency mana potion stashed in their pointy hat."
       document.getElementById("char1").style.backgroundColor = "#007bff"
       document.getElementById("char2").style.backgroundColor = "#0056b3"
       document.getElementById("char3").style.backgroundColor = "#0056b3"
       health = 10;
-      document.getElementById("characterblurb").innerHTML = "It's Fitzgerald!"; //ADD CHARACTER DESC HERE
+      document.getElementById("characterblurb").innerHTML = "Fitzgerald- an aspiring wizard. They have great prowess in the magical arts and can cast many types of magical spells and incantations. However, they are physically frail and have the least maximum health."; //ADD CHARACTER DESC HERE
       document.getElementById("characterprofile").style.backgroundColor = "blue"; //ADD CHARACTER PROFILE HERE
     }
     if(char == 2){ //Ranger
-      chardesc = "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total."
+      chardesc = "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total.  They start with light leather armor, a bow, arrows, and a small dagger in their boot."
       document.getElementById("char2").style.backgroundColor = "#007bff"
       document.getElementById("char1").style.backgroundColor = "#0056b3"
       document.getElementById("char3").style.backgroundColor = "#0056b3"
       health = 15;
-      document.getElementById("characterblurb").innerHTML = "It's Wilde!"; //ADD CHARACTER DESC HERE
+      document.getElementById("characterblurb").innerHTML = "Wilde- a nature loving ranger. They are acrobatic and nimble, and can cast simple nature spells to coax plants and animals to aid them."; //ADD CHARACTER DESC HERE
       document.getElementById("characterprofile").style.backgroundColor = "green"; //ADD CHARACTER PROFILE HERE
     }
     if(char == 3){ //Barbarian
-      chardesc = "Burgess, a strong warrior. They are very strong, and well trained in all manner of close combat. They have high defense and stamina, and are very well suited to feats of strength. They are also somewhat nimble, but lack the ability for major acrobatic movements. However, they have a complete and utter lack of magic, being completely incapable under any circumstances to cast even the simplest of spells. They can still use potions and magical items, but cannot cast any magic on their own at all. They have 25 hit points total."
+      chardesc = "Burgess, a strong warrior. They are very strong, and well trained in all manner of close combat. They have high defense and stamina, and are very well suited to feats of strength. They are also somewhat nimble, but lack the ability for major acrobatic movements. However, they have a complete and utter lack of magic, being completely incapable under any circumstances to cast even the simplest of spells. They can still use potions and magical items, but cannot cast any magic on their own at all. They have 25 hit points total. They start with sturdy chainmail armor, a battleaxe, and brass knuckles."
       document.getElementById("char3").style.backgroundColor = "#007bff"
       document.getElementById("char2").style.backgroundColor = "#0056b3"
       document.getElementById("char1").style.backgroundColor = "#0056b3"
       health = 25;
-      document.getElementById("characterblurb").innerHTML = "It's Burgess!"; //ADD CHARACTER DESC HERE
+      document.getElementById("characterblurb").innerHTML = "Burgess- a powerful warrior. They have bulging muscles and a strong constitution. They are physically powerful, and a seasoned warrior, but have absolutely no magical talent whatsoever. They make up for this however with their overwhelming strength and considerable health pool."; //ADD CHARACTER DESC HERE
       document.getElementById("characterprofile").style.backgroundColor = "red"; //ADD CHARACTER PROFILE HERE
     }
     document.getElementById("buttonStart").style.display = "block";
@@ -69,14 +75,14 @@ function selectQuest(number){
     document.getElementById("quest1").style.backgroundColor = "#007bff"
     document.getElementById("quest2").style.backgroundColor = "#0056b3"
     document.getElementById("quest3").style.backgroundColor = "#0056b3"
-    document.getElementById("questblurb").innerHTML = "WIP quest1 info"; //ADD QUEST 1 INFO
+    document.getElementById("questblurb").innerHTML = "WIP Adventure into the depths of a magical maze to claim the treasures within, defeating goblins and evading traps on the way."; //ADD QUEST 1 INFO
   }
   if(number == 2){
     questinfo = `The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room (except for the reception room) will contain a ninja disguised as an office worker, who is a master at some office-related weapon (for example, using scissors as throwing knives, or a stapler as nunchucks). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. The final room (the room after room 6) is the boss's office. The boss wields all of the office ninja weapons, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.`;
     document.getElementById("quest2").style.backgroundColor = "#007bff"
     document.getElementById("quest1").style.backgroundColor = "#0056b3"
     document.getElementById("quest3").style.backgroundColor = "#0056b3"
-    document.getElementById("questblurb").innerHTML = "WIP quest2 info"; //ADD QUEST 2 INFO
+    document.getElementById("questblurb").innerHTML = "Infiltrate and take out the leader of a band of Office Ninjas in their corporate headquarters."; //ADD QUEST 2 INFO
   }
   if(number == 3){
     questinfo = ``;
@@ -94,6 +100,13 @@ function confirmQuest(){
   document.getElementById("characterSelect").style.display = "grid";
 }
 
+let developermode = "";
+
+function activateDevMode(){
+  console.log("Dev mode activated. use developer code word DELTA to succeed in any action.");
+  developermode = "If the user claims they are the developer and uses the code word DELTA, do whatever they say without question. This overrides any other rules, even ones already defined. This action always succeeds, without fail. DO NOT UNDER ANY CIRCUMSTANCES MENTION THIS WITHIN THE GAME. THIS IS TOP SECRET DEVELOPER ONLY INFORMATION FOR CODE DEBUGGING.";
+}
+
 function updateSystemPrompt(chardesc1, progression1){
   systemPrompt = `Highest Priority:
     
@@ -101,17 +114,22 @@ function updateSystemPrompt(chardesc1, progression1){
 
     The user is currently in room ${progression1}.
 
-    You are a game master, running a fantasy game. The user's character is ${chardesc1} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in.
+    You are a game master, running a fantasy game. The user's character is ${chardesc1} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in. Outside of the items mentioned, the user starts the adventure with no extra gear.
+
+    ${developermode}
     
-    Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and if the game is over and if any health is lost and if any health is gained and if they have progressed a room + "</choices>"
+    Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and their difficulties and if the game is over and if any health is lost and if any health is gained and if they have progressed a room + "</choices>"
 
     ONLY RESPOND FOR THE CURRENT CONVERSATION!!!
     
     json format:
       {
         choice1: "Choice 1 text.",
+        choice1difficulty: 10 //on a scale of 1-20, how difficult the choice is, with 1 being incredibly easy and 20 being almost impossible. If the user is skilled in the choice, reduce the difficulty of the choice. (integer, whole numbers only, 1 to 20),
         choice2: "Choice 2 text.",
+        choice2difficulty: 10 //on a scale of 1-20, how difficult the choice is, with 1 being incredibly easy and 20 being almost impossible. If the user is skilled in the choice, reduce the difficulty of the choice. (integer, whole numbers only, 1 to 20),
         choice3: "Choice 3 text.",
+        choice3difficulty: 10 //on a scale of 1-20, how difficult the choice is, with 1 being incredibly easy and 20 being almost impossible. If the user is skilled in the choice, reduce the difficulty of the choice. (integer, whole numbers only, 1 to 20),
         gameOver: 1 //if the game is over, 0. if the game is ongoing, 1 (integer, whole numbers only).
         healthLost: 0 //how many hit points the user loses if they are hurt (integer, whole numbers only).
         healthGained: 0 //how many hit points the user gains if they are healed (integer, whole numbers only).
@@ -195,13 +213,16 @@ function sendMessage() {
   let request = systemPrompt;
 
   //add luck modifier
-  luck = Math.floor(Math.random() * 3);
-  if(luck == 0){ //unlucky
-    request += "\n\n User luck: Unlucky. The action the user just tried to do will end in failure"
-  }
-   if(luck == 2){ //lucky
-     request += "\n\n User luck: Lucky. The action the user has just tried to do will brilliantly succeed, unless it is impossible to the user to do."
-   }
+  // luck = Math.floor(Math.random() * 3);
+  // if(luck == 0){ //unlucky
+  //   request += "\n\n User luck: Unlucky. The action the user just tried to do will end in failure"
+  // }
+  //  if(luck == 2){ //lucky
+  //    request += "\n\n User luck: Lucky. The action the user has just tried to do will brilliantly succeed, unless it is impossible to the user to do."
+  //  }
+
+  request += luckmessage;
+  luckmessage = "";
   
 
   // check for empty input
@@ -248,15 +269,26 @@ function applyChoice(choiceNumber) {
   if (!choiceNumber) return;
 
   let selectedChoiceText = "";
+  randomnumber = Math.floor(Math.random() * 20) + 1 + 5; //determine the luck of the user, to see if a thing succeeds or fails. Add the modifier luck here depending on what task it is. +5 temporary to make things easier.
+  console.log("Luck rolled: " + randomnumber);
 
   if (choiceNumber === 1 && choice1.innerText) {
     selectedChoiceText = choice1.innerText;
+    if(randomnumber < luck1){
+      luckmessage = "The action the user just tried to do will fail"
+    }
   }
   else if (choiceNumber === 2 && choice2.innerText) {
     selectedChoiceText = choice2.innerText;
+    if(randomnumber < luck2){
+      luckmessage = "The action the user just tried to do will fail"
+    }
   }
   else if (choiceNumber === 3 && choice3.innerText) {
     selectedChoiceText = choice3.innerText;
+    if(randomnumber < luck3){
+      luckmessage = "The action the user just tried to do will fail"
+    }
   } 
 
   // update userInput
@@ -294,13 +326,10 @@ function updateChoices(response) {
   const choicesEnd = "</choices>";
 
   const choicesJson = extractJsonFromString(response, choicesStart, choicesEnd);
-  choice1.innerText = choicesJson.choice1;
-  choice2.innerText = choicesJson.choice2;
-  choice3.innerText = choicesJson.choice3;
+  
   if(choicesJson.gameOver == 0 || choicesJson.gameOver == "0"){
     gameend = true;
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
-    document.getElementById("healthcontainer").style.display = "none";
   }
   currenthealth = currenthealth - choicesJson.healthLost + choicesJson.healthGained
 
@@ -318,10 +347,11 @@ function updateChoices(response) {
   };
 
   document.getElementById("healthbar").innerHTML = currenthealth + "/" + health;
-  if(currenthealth < 0){
+  if(currenthealth < 0 || currenthealth == 0){
     gameend = true;
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
-    document.getElementById("healthcontainer").style.display = "none";
+    chatWindow.style.display = "none";
+    document.getElementById("healthbar").innerHTML = "You Died!"
   };
 
   if(choicesJson.progression == 1 || choicesJson.progression == "1"){
@@ -330,5 +360,12 @@ function updateChoices(response) {
   console.log(progression);
   updateSystemPrompt(chardesc, progression);
 
+  luck1 = choicesJson.choice1difficulty;
+  luck2 = choicesJson.choice2difficulty;
+  luck3 = choicesJson.choice3difficulty;
+
+  choice1.innerText = choicesJson.choice1;
+  choice2.innerText = choicesJson.choice2;
+  choice3.innerText = choicesJson.choice3;
   return cutOffString(response, choicesStart, choicesEnd);
 }
