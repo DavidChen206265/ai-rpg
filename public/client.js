@@ -85,11 +85,11 @@ function selectQuest(number){
     document.getElementById("questblurb").innerHTML = "Infiltrate and take out the leader of a band of Office Ninjas in their corporate headquarters."; //ADD QUEST 2 INFO
   }
   if(number == 3){
-    questinfo = ``;
+    questinfo = `The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have victorian era puzzles and monsters, then the late middle rooms (rooms 5-6) have modern puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. After the mad mage is initially defeated, they transport both you and themself into a void outside of time, where they are fully healed and restart their attacks with new vigor. The mad mage can only be truly defeated in this void outside of time. When the mad mage is truly defeated, both you and their body are immediately returned to the throne room, and the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is truly defeated, the user wins the game.`;
     document.getElementById("quest3").style.backgroundColor = "#007bff"
     document.getElementById("quest2").style.backgroundColor = "#0056b3"
     document.getElementById("quest1").style.backgroundColor = "#0056b3"
-    document.getElementById("questblurb").innerHTML = "WIP quest3 info"; //ADD QUEST 3 INFO
+    document.getElementById("questblurb").innerHTML = "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom."; //ADD QUEST 3 INFO
   }
   document.getElementById("confirmbtn").style.display = "inline-block";
   document.getElementById("questblurb").style.display = "block";
@@ -117,8 +117,10 @@ function updateSystemPrompt(chardesc1, progression1){
     You are a game master, running a fantasy game. The user's character is ${chardesc1} (avoid quoting the character description verbatim) Based on the previous quest information, generate a description of the room the user is currently in. Outside of the items mentioned, the user starts the adventure with no extra gear.
 
     ${developermode}
+
+    The user's current health is ${currenthealth} of ${health}. IMPORTANT NOTE: If the amount of health the user loses (the value of healthLost in the json) is greater than or equal to the user's current health, the user dies.
     
-    Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and their difficulties and if the game is over and if any health is lost and if any health is gained and if they have progressed a room + "</choices>"
+    Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "<choices>" + json of three choices and their difficulties and if the game is over and if any health is lost and if any health is gained and if they have progressed a room and if the user is dead + "</choices>"
 
     ONLY RESPOND FOR THE CURRENT CONVERSATION!!!
     
@@ -130,11 +132,13 @@ function updateSystemPrompt(chardesc1, progression1){
         choice2difficulty: 10 //on a scale of 1-20, how difficult the choice is, with 1 being incredibly easy and 20 being almost impossible. If the user is skilled in the choice, reduce the difficulty of the choice. (integer, whole numbers only, 1 to 20),
         choice3: "Choice 3 text.",
         choice3difficulty: 10 //on a scale of 1-20, how difficult the choice is, with 1 being incredibly easy and 20 being almost impossible. If the user is skilled in the choice, reduce the difficulty of the choice. (integer, whole numbers only, 1 to 20),
-        gameOver: 1 //if the game is over, 0. if the game is ongoing, 1 (integer, whole numbers only).
+        gameOver: 1 //if the user has won the game, 0. if the game is ongoing, 1. (integer, whole numbers only).
         healthLost: 0 //how many hit points the user loses if they are hurt (integer, whole numbers only).
         healthGained: 0 //how many hit points the user gains if they are healed (integer, whole numbers only).
         progression: 0 //if the user has progressed to the next room, 1. If they remain in the same room, 0. (1 or 0 only).
       }`
+
+    
 }
 
 // connected to the server
@@ -269,7 +273,7 @@ function applyChoice(choiceNumber) {
   if (!choiceNumber) return;
 
   let selectedChoiceText = "";
-  randomnumber = Math.floor(Math.random() * 20) + 1 + 5; //determine the luck of the user, to see if a thing succeeds or fails. Add the modifier luck here depending on what task it is. +5 temporary to make things easier.
+  randomnumber = Math.floor(Math.random() * 20) + 1; //determine the luck of the user, to see if a thing succeeds or fails. Add the modifier luck here depending on what task it is.
   console.log("Luck rolled: " + randomnumber);
 
   if (choiceNumber === 1 && choice1.innerText) {
@@ -330,6 +334,7 @@ function updateChoices(response) {
   if(choicesJson.gameOver == 0 || choicesJson.gameOver == "0"){
     gameend = true;
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
+    document.getElementById("healthcontainer").style.display = "none";
   }
   currenthealth = currenthealth - choicesJson.healthLost + choicesJson.healthGained
 
@@ -350,8 +355,6 @@ function updateChoices(response) {
   if(currenthealth < 0 || currenthealth == 0){
     gameend = true;
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
-    chatWindow.style.display = "none";
-    document.getElementById("healthbar").innerHTML = "You Died!"
   };
 
   if(choicesJson.progression == 1 || choicesJson.progression == "1"){
