@@ -7,38 +7,42 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1 onclick="activateDevMode()">AI Fantasy Adventure</h1>
+    <div id="bannerleft">L</div>
+    <div id="banneright">R</div>
+    <div id="mainbody">
+        <h1 onclick="activateDevMode()">AI Fantasy Adventure</h1>
 
-    <div id="chat-window">Connecting...</div>
+        <div id="chat-window">Connecting...</div>
 
-    <div class="input-group" id="inputBox">
-        
-        <button onclick="applyChoice(1)" id="choice-1">choice one</button>
-        <button onclick="applyChoice(2)" id="choice-2">choice two</button>
-        <button onclick="applyChoice(3)" id="choice-3">choice three</button>
-        <input type="text" id="userInput" placeholder="Enter Action" onkeypress="checkEnter(event)">
-        <button onclick="sendMessage()" id="buttonSend">Send</button>
-    </div>
+        <div class="input-group" id="inputBox">
+            
+            <button onclick="applyChoice(1)" id="choice-1">choice one</button>
+            <button onclick="applyChoice(2)" id="choice-2">choice two</button>
+            <button onclick="applyChoice(3)" id="choice-3">choice three</button>
+            <input type="text" id="userInput" placeholder="Enter Action" onkeypress="checkEnter(event)">
+            <button onclick="sendMessage()" id="buttonSend">Send</button>
+        </div>
 
-    <div id="questSelect">
-        <button onclick="selectQuest(1)" id="quest1">Maze</button>
-        <button onclick="selectQuest(2)" id="quest2">Ninja Office</button>
-        <button onclick="selectQuest(3)" id="quest3">Timelost Castle</button>
-        <div id="questblurb">WIP</div>
-        <button onclick="confirmQuest()" id="confirmbtn">Select</button>
-    </div>
+        <div id="questSelect">
+            <button onclick="selectQuest(1)" id="quest1">Maze</button>
+            <button onclick="selectQuest(2)" id="quest2">Ninja Office</button>
+            <button onclick="selectQuest(3)" id="quest3">Timelost Castle</button>
+            <div id="questblurb">WIP</div>
+            <button onclick="confirmQuest()" id="confirmbtn">Select</button>
+        </div>
 
-    <div id="characterSelect">
-        <button onclick="selectCharacter(1)" id="char1">Fitzgerald</button>
-        <button onclick="selectCharacter(2)" id="char2">Wilde</button>
-        <button onclick="selectCharacter(3)" id="char3">Burgess</button>
-        <div id="characterblurb">WIP</div>
-        <div id="characterprofile">WIP</div>
-    </div>
-    <button onclick="sendMessage()" id="buttonStart">Start</button>
-    <div id="healthcontainer">
-        <div id="healthmover">&nbsp;</div>
-        <div id="healthbar">10/10</div>
+        <div id="characterSelect">
+            <button onclick="selectCharacter(1)" id="char1">Fitzgerald</button>
+            <button onclick="selectCharacter(2)" id="char2">Wilde</button>
+            <button onclick="selectCharacter(3)" id="char3">Burgess</button>
+            <div id="characterblurb">WIP</div>
+            <div id="characterprofile">WIP</div>
+        </div>
+        <button onclick="sendMessage()" id="buttonStart">Start</button>
+        <div id="healthcontainer">
+            <div id="healthmover">&nbsp;</div>
+            <div id="healthbar">10/10</div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

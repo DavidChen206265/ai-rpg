@@ -1,8 +1,28 @@
-body {
+body{
+    display:grid;
+    grid-template-areas: 'left left middle middle middle right right';
+    margin:0px;
+    overflow:hidden;
+    background-color:#99999b;
+}
+#mainbody {
     font-family: system-ui, sans-serif;
-    max-width: 600px;
-    margin: 40px auto;
+    grid-area:middle;
     padding: 20px;
+    height:100vh;
+    width:600px;
+}
+#bannerleft{
+    background-color:sienna;
+    grid-area:left;
+    background-image: url("images/bannerVinesLeft.webp");
+    background-size: cover;
+}
+#banneright{
+    background-color:sienna;
+    grid-area:right;
+    background-image: url("images/bannerVinesRight.webp");
+    background-size: cover;
 }
 
 #chat-window {
@@ -48,6 +68,7 @@ body {
     grid-template-columns:1fr 1fr 1fr;
     gap:10px;
     margin:10px;
+    width:100%;
 }
 
 #char1{
