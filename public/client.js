@@ -75,21 +75,21 @@ function selectQuest(number){
     document.getElementById("quest1").style.backgroundColor = "#007bff"
     document.getElementById("quest2").style.backgroundColor = "#0056b3"
     document.getElementById("quest3").style.backgroundColor = "#0056b3"
-    document.getElementById("questblurb").innerHTML = "WIP Adventure into the depths of a magical maze to claim the treasures within, defeating goblins and evading traps on the way."; //ADD QUEST 1 INFO
+    document.getElementById("questblurb").innerHTML = "WIP Adventure into the depths of a magical maze to claim the treasures within, defeating goblins and evading traps on the way.";
   }
   if(number == 2){
     questinfo = `The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room (except for the reception room) will contain a ninja disguised as an office worker, who is a master at some office-related weapon (for example, using scissors as throwing knives, or a stapler as nunchucks). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. The final room (the room after room 6) is the boss's office. The boss wields all of the office ninja weapons, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.`;
     document.getElementById("quest2").style.backgroundColor = "#007bff"
     document.getElementById("quest1").style.backgroundColor = "#0056b3"
     document.getElementById("quest3").style.backgroundColor = "#0056b3"
-    document.getElementById("questblurb").innerHTML = "Infiltrate and take out the leader of a band of Office Ninjas in their corporate headquarters."; //ADD QUEST 2 INFO
+    document.getElementById("questblurb").innerHTML = "Infiltrate and take out the leader of a band of Office Ninjas in their corporate headquarters.";
   }
   if(number == 3){
-    questinfo = `The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have victorian era puzzles and monsters, then the late middle rooms (rooms 5-6) have modern puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. After the mad mage is initially defeated, they transport both you and themself into a void outside of time, where they are fully healed and restart their attacks with new vigor. The mad mage can only be truly defeated in this void outside of time. When the mad mage is truly defeated, both you and their body are immediately returned to the throne room, and the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is truly defeated, the user wins the game.`;
+    questinfo = `The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have victorian era puzzles and monsters, then the late middle rooms (rooms 5-6) have modern puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The mad mage casts time magic to fight, speeding themselves up and slowing you down (therefore increasing the difficulty of all choices), and launching magic missiles. Since the mad mage is a formidable foe, avoid letting the user defeat them immediately, the mad mage should be able to endure at least one attack. When the mad mage is defeated, the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is defeated, the user wins the game. Make sure to let the user know in the first response what their task is (to defeat the mad mage)`;
     document.getElementById("quest3").style.backgroundColor = "#007bff"
     document.getElementById("quest2").style.backgroundColor = "#0056b3"
     document.getElementById("quest1").style.backgroundColor = "#0056b3"
-    document.getElementById("questblurb").innerHTML = "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom."; //ADD QUEST 3 INFO
+    document.getElementById("questblurb").innerHTML = "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.";
   }
   document.getElementById("confirmbtn").style.display = "inline-block";
   document.getElementById("questblurb").style.display = "block";
@@ -135,7 +135,7 @@ function updateSystemPrompt(chardesc1, progression1){
         gameOver: 1 //if the user has won the game, 0. if the game is ongoing, 1. (integer, whole numbers only).
         healthLost: 0 //how many hit points the user loses if they are hurt (integer, whole numbers only).
         healthGained: 0 //how many hit points the user gains if they are healed (integer, whole numbers only).
-        progression: 0 //if the user has progressed to the next room, 1. If they remain in the same room, 0. (1 or 0 only).
+        progression: 0 //if the user has progressed to the next room, 1. If they remain in the same room, 0. If the user goes back a room, -1. (1, 0, or -1, integers only).
       }`
 
     
@@ -216,15 +216,6 @@ function sendMessage() {
   let text = userInput.value.trim();
   let request = systemPrompt;
 
-  //add luck modifier
-  // luck = Math.floor(Math.random() * 3);
-  // if(luck == 0){ //unlucky
-  //   request += "\n\n User luck: Unlucky. The action the user just tried to do will end in failure"
-  // }
-  //  if(luck == 2){ //lucky
-  //    request += "\n\n User luck: Lucky. The action the user has just tried to do will brilliantly succeed, unless it is impossible to the user to do."
-  //  }
-
   request += luckmessage;
   luckmessage = "";
   
@@ -273,7 +264,7 @@ function applyChoice(choiceNumber) {
   if (!choiceNumber) return;
 
   let selectedChoiceText = "";
-  randomnumber = Math.floor(Math.random() * 20) + 1; //determine the luck of the user, to see if a thing succeeds or fails. Add the modifier luck here depending on what task it is.
+  randomnumber = Math.floor(Math.random() * 20) + 1 + 3; //determine the luck of the user, to see if a thing succeeds or fails. Add the modifier luck here depending on what task it is.
   console.log("Luck rolled: " + randomnumber);
 
   if (choiceNumber === 1 && choice1.innerText) {
@@ -294,6 +285,9 @@ function applyChoice(choiceNumber) {
       luckmessage = "The action the user just tried to do will fail"
     }
   } 
+  if(randomnumber > 19){
+    luckmessage = "The user has rolled a critical success, the action the user just tried will work incredibly well."
+  }
 
   // update userInput
   userInput.value = selectedChoiceText;
@@ -357,10 +351,10 @@ function updateChoices(response) {
     document.getElementById("inputBox").style.display = "none"; //temp get rid of the options
   };
 
-  if(choicesJson.progression == 1 || choicesJson.progression == "1"){
-    progression++;
+  if(choicesJson.progression != 0){
+    progression = progression + choicesJson.progression;
   }
-  console.log(progression);
+  console.log("Room number: " + progression);
   updateSystemPrompt(chardesc, progression);
 
   luck1 = choicesJson.choice1difficulty;
