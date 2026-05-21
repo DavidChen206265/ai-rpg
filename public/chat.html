@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI RPG - Chat</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="game-header">
+      <h1 id="game-title">AI Fantasy Adventure</h1>
+      <div class="page-actions">
+        <a class="button-link" href="/">Home</a>
+        <a id="auth-action" class="button-link" href="/login">Login / Register</a>
+      </div>
+    </header>
+
+    <section id="quest-select" class="setup-panel">
+      <div class="button-grid">
+        <button id="quest-1" class="option-button is-selected" type="button">Maze</button>
+        <button id="quest-2" class="option-button" type="button">Ninja Office</button>
+        <button id="quest-3" class="option-button" type="button">WIP</button>
+      </div>
+      <p id="quest-blurb" class="selection-copy is-hidden">WIP</p>
+      <button id="confirm-quest" class="primary-action is-hidden" type="button">Select Quest</button>
+    </section>
+
+    <section id="character-select" class="setup-panel is-hidden">
+      <div class="button-grid">
+        <button id="character-1" class="option-button" type="button">Fitzgerald</button>
+        <button id="character-2" class="option-button is-selected" type="button">Wilde</button>
+        <button id="character-3" class="option-button" type="button">Burgess</button>
+      </div>
+      <div class="character-details">
+        <div id="character-profile" class="character-profile is-hidden" aria-hidden="true"></div>
+        <p id="character-blurb" class="selection-copy is-hidden">WIP</p>
+      </div>
+    </section>
+
+    <button id="start-game" class="primary-action is-hidden" type="button">Start</button>
+
+    <section id="health-container" class="health-meter is-hidden" aria-label="Health">
+      <div id="health-fill" class="health-fill"></div>
+      <div id="health-label" class="health-label">10/10</div>
+    </section>
+
+    <section id="chat-window" class="chat-window" aria-live="polite">Connecting...</section>
+
+    <form id="action-form" class="action-form is-hidden">
+      <button id="choice-1" class="choice-button" type="button">Choice one</button>
+      <button id="choice-2" class="choice-button" type="button">Choice two</button>
+      <button id="choice-3" class="choice-button" type="button">Choice three</button>
+      <input id="user-input" type="text" placeholder="Enter action" autocomplete="off">
+      <button id="send-action" class="primary-action" type="submit">Send</button>
+    </form>
+
+    <button id="show-history" class="primary-action is-hidden" type="button">OK</button>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/chat.js"></script>
+</body>
+</html>

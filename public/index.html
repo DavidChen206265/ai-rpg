@@ -1,47 +1,32 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Fantasy Adventure</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI RPG - Home</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <h1 onclick="activateDevMode()">AI Fantasy Adventure</h1>
+  <main class="page-shell">
+    <header class="page-header">
+      <h1>AI RPG</h1>
+      <nav class="page-actions">
+        <a id="auth-action" class="button-link" href="/login">Login / Register</a>
+        <a id="new-chat" class="button-link" href="/chat">New Chat</a>
+      </nav>
+    </header>
 
-    <div id="chat-window">Connecting...</div>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Chat Records</h2>
+        <button id="refresh-saves" type="button">Refresh</button>
+      </div>
+      <div id="save-list" class="save-list">
+        <p class="empty-state">Please log in to create or load saves.</p>
+      </div>
+    </section>
+  </main>
 
-    <div class="input-group" id="inputBox">
-        
-        <button onclick="applyChoice(1)" id="choice-1">choice one</button>
-        <button onclick="applyChoice(2)" id="choice-2">choice two</button>
-        <button onclick="applyChoice(3)" id="choice-3">choice three</button>
-        <input type="text" id="userInput" placeholder="Enter Action" onkeypress="checkEnter(event)">
-        <button onclick="sendMessage()" id="buttonSend">Send</button>
-    </div>
-
-    <div id="questSelect">
-        <button onclick="selectQuest(1)" id="quest1">Maze</button>
-        <button onclick="selectQuest(2)" id="quest2">Ninja Office</button>
-        <button onclick="selectQuest(3)" id="quest3">WIP</button>
-        <div id="questblurb">WIP</div>
-        <button onclick="confirmQuest()" id="confirmbtn">Select</button>
-    </div>
-
-    <div id="characterSelect">
-        <button onclick="selectCharacter(1)" id="char1">Fitzgerald</button>
-        <button onclick="selectCharacter(2)" id="char2">Wilde</button>
-        <button onclick="selectCharacter(3)" id="char3">Burgess</button>
-        <div id="characterblurb">WIP</div>
-        <div id="characterprofile">WIP</div>
-    </div>
-    <button onclick="sendMessage()" id="buttonStart">Start</button>
-    <div id="healthcontainer">
-        <div id="healthmover">&nbsp;</div>
-        <div id="healthbar">10/10</div>
-    </div>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/client.js"></script>
+  <script src="/home.js"></script>
 </body>
 </html>

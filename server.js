@@ -1,141 +1,428 @@
 require("dotenv").config();
+
+const crypto = require("crypto");
+const path = require("path");
 const express = require("express");
 const http = require("http");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { Server } = require("socket.io");
 
+const PORT = process.env.PORT || 3000;
+
+const PUBLIC_DIR = path.join(process.cwd(), "public");
+
+// MongoDB names
+const DATABASE_NAME = "ai_rpg_db";
+const USERS_COLLECTION = "users";
+const SESSIONS_COLLECTION = "sessions";
+const SAVES_COLLECTION = "game_saves";
+
+// AI
+const AI_API = {
+  baseUrl: "https://gcli.ggchan.dev/v1/chat/completions",
+  mainModel: "gemini-3.1-pro-preview",
+  dataModel: "gemini-3-flash-preview",
+};
+
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const httpServer = http.createServer(app);
+const io = new Server(httpServer);
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
-
-// Pull the connection string from your .env file
-const uri = process.env.MONGODB_URI;
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(uri, {
+// MongoDB client
+const mongoClient = new MongoClient(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017", {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
+  },
+  directConnection: true,
+  socketTimeoutMS: 60000,
+  serverSelectionTimeoutMS: 60000,
+});
+
+// MongoDB connection
+let mongoConnected = false;
+
+app.use(express.static(PUBLIC_DIR));
+app.use(express.json());
+
+// routers
+app.get("/", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "index.html")));
+app.get("/login", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "login.html")));
+app.get("/chat", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "chat.html")));
+
+// auth helper
+app.get("/api/me", async (req, res) => {
+  try {
+    const user = await requireAuthUser(req);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    res.json({
+      user: {
+        id: user._id.toString(),
+        username: user.displayName,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.use(express.static("public"));
+// get all saves' basic info for home page
+app.get("/api/saves", async (req, res) => {
+  try {
+    const user = await requireAuthUser(req);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-// AI API request variables
-const API_BASE_URL = "https://gcli.ggchan.dev/v1/chat/completions";
-const MAIN_MODEL_ID = "gemini-3.1-pro-preview"; 
-const DATA_MODEL_ID = "gemini-3-flash-preview"; 
+    const saves = await getSavesCollection()
+      .find({ userId: user._id })
+      .project({ title: 1, createdAt: 1, updatedAt: 1 })
+      .sort({ updatedAt: -1 })
+      .toArray();
 
-runDB().catch(console.dir);
+    res.json({ saves });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// after a client connected
+// read in a save
+app.get("/api/saves/:id", async (req, res) => {
+  try {
+    const user = await requireAuthUser(req);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const save = await getSavesCollection().findOne({
+      _id: new ObjectId(req.params.id),
+      userId: user._id,
+    });
+
+    if (!save) {
+      return res.status(404).json({ error: "Save not found" });
+    }
+
+    res.json({ save });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// register
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!isValidCredential(username, password)) {
+      return res.status(400).json({ error: "Username and password are required." });
+    }
+
+    await connectMongo();
+    const users = getUsersCollection();
+    const normalizedUsername = normalizeUsername(username);
+    const existing = await users.findOne({ username: normalizedUsername });
+    if (existing) {
+      return res.status(409).json({ error: "Username already exists." });
+    }
+
+    const userDoc = {
+      username: normalizedUsername,
+      displayName: username.trim(),
+      passwordHash: hashPassword(password),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await users.insertOne(userDoc);
+    const sessionToken = crypto.randomUUID();
+    await upsertSession(sessionToken, result.insertedId);
+
+    res.json({
+      user: {
+        id: result.insertedId.toString(),
+        username: username.trim(),
+      },
+      token: sessionToken,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// login 
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!isValidCredential(username, password)) {
+      return res.status(400).json({ error: "Username and password are required." });
+    }
+
+    await connectMongo();
+    const users = getUsersCollection();
+    const user = await users.findOne({ username: normalizeUsername(username) });
+    if (!user || user.passwordHash !== hashPassword(password)) {
+      return res.status(401).json({ error: "Invalid username or password." });
+    }
+
+    const sessionToken = crypto.randomUUID();
+    await upsertSession(sessionToken, user._id);
+
+    res.json({
+      user: {
+        id: user._id.toString(),
+        username: user.displayName,
+      },
+      token: sessionToken,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// create a new save
+app.post("/api/saves", async (req, res) => {
+  try {
+    const user = await requireAuthUser(req);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { title, chatHistory, gameState, questInfo, characterDescription } = req.body || {};
+    const result = await getSavesCollection().insertOne({
+      userId: user._id,
+      title: cleanSaveTitle(title),
+      chatHistory: Array.isArray(chatHistory) ? chatHistory : [],
+      gameState: gameState || {},
+      questInfo: questInfo || "",
+      characterDescription: characterDescription || "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    res.json({ saveId: result.insertedId.toString() });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// update a save
+app.put("/api/saves/:id", async (req, res) => {
+  try {
+    const user = await requireAuthUser(req);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // check for what to update
+    const update = {};
+    if (typeof req.body?.title === "string") update.title = cleanSaveTitle(req.body.title);
+    if (Array.isArray(req.body?.chatHistory)) update.chatHistory = req.body.chatHistory;
+    if (req.body?.gameState) update.gameState = req.body.gameState;
+    if (typeof req.body?.questInfo === "string") update.questInfo = req.body.questInfo;
+    if (typeof req.body?.characterDescription === "string") {
+      update.characterDescription = req.body.characterDescription;
+    }
+    update.updatedAt = new Date();
+
+    const result = await getSavesCollection().updateOne(
+      { _id: new ObjectId(req.params.id), userId: user._id },
+      { $set: update }
+    );
+
+    res.json({ matched: result.matchedCount, modified: result.modifiedCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// delete a save
+app.delete("/api/saves/:id", async (req, res) => {
+  try {
+    const user = await requireAuthUser(req);
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const result = await getSavesCollection().deleteOne({
+      _id: new ObjectId(req.params.id),
+      userId: user._id,
+    });
+
+    res.json({ deleted: result.deletedCount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 io.on("connection", (socket) => {
-  console.log("A client has connected.");
 
-  
-
-  // ask AI
-  socket.on("ask_ai", async (prompt, currentInput) => {
+  // ai stream 
+  socket.on("ask_ai", async (payload = {}) => {
     try {
-      // Notify the client that the stream is starting
-      socket.emit("ai_stream", "start");
+      const { prompt, currentInput, token } = payload;
+      if (!token) throw new Error("Missing session token.");
 
-      // send a request and wait for the response
-      const response = await fetch(API_BASE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.AI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: MAIN_MODEL_ID,
-          messages: [{ role: "user", content: prompt }],
-          stream: true, // 1. Tell the API to stream the response
-        }),
+      socket.emit("ai_stream", "start");
+      const aiMessage = await streamChatCompletion({
+        model: AI_API.mainModel,
+        prompt,
+        onChunk: (delta) => socket.emit("ai_stream", `[Chunk]: ${delta}`),
       });
 
-      if (!response.ok) {
-        throw new Error(`API request failed, status code: ${response.status}`);
-      }
-
-      // 2. Set up a decoder and a buffer to handle partial chunks
-      const decoder = new TextDecoder("utf-8");
-      let buffer = "";
-      let fullAiMessage = ""; // Accumulator for the final summary
-
-      // 3. Iterate asynchronously over the incoming stream
-      for await (const chunk of response.body) {
-        buffer += decoder.decode(chunk, { stream: true });
-        const lines = buffer.split("\n");
-
-        // The last line might be incomplete, keep it in the buffer for the next chunk
-        buffer = lines.pop();
-
-        for (const line of lines) {
-          if (line.trim() === "") continue;
-
-          if (line.startsWith("data: ")) {
-            const dataStr = line.replace("data: ", "").trim();
-
-            // Standard OpenAI-compatible API termination signal
-            if (dataStr === "[DONE]") break;
-
-            try {
-              const data = JSON.parse(dataStr);
-              // In a stream, the data is typically inside `delta` rather than `message`
-              const delta = data.choices[0]?.delta?.content;
-
-              if (delta) {
-                fullAiMessage += delta;
-                // 4. Emit each piece of text as soon as it arrives
-                socket.emit("ai_stream", `[Chunk]: ${delta}`);
-              }
-            } catch (e) {
-              console.error("Error parsing stream chunk:", e, line);
-            }
-          }
-        }
-      }
-
-      // 5. Notify the client the stream is complete and run your summary
       socket.emit("ai_stream", "end");
-      summarizeData(socket, currentInput, fullAiMessage);
-
+      await summarizeConversation(socket, currentInput, aiMessage);
     } catch (error) {
-      console.error("API error:", error);
       socket.emit("ai_stream", `[Error]: ${error.message}`);
     }
   });
-
-  // disconnect
-  socket.on("disconnect", () => {
-    console.log("A client has disconnected.");
-  });
 });
 
-// request data summarization
-async function summarizeData(socket, currentInput, response) {
+// create connection to db
+async function connectMongo() {
+  if (mongoConnected) return;
+  await mongoClient.connect();
+  mongoConnected = true;
+  console.log("Connected to MongoDB.");
+}
 
-  let prompt = "Summarize and organize the following conversation for AI to read in A FEW SHORT AND CONCISE SENTENCES. Including settings, time, location, important events, interactions, characters. ";
+// get all users
+function getUsersCollection() {
+  return mongoClient.db(DATABASE_NAME).collection(USERS_COLLECTION);
+}
 
-  prompt += "[User: ] " + currentInput;
-  prompt += "\n\n ";
-  prompt += "[GameMaster: ] " + response;
-  prompt += "\n\n ";
+// auth helper
+function getSessionsCollection() {
+  return mongoClient.db(DATABASE_NAME).collection(SESSIONS_COLLECTION);
+}
+
+// get saves from database
+function getSavesCollection() {
+  return mongoClient.db(DATABASE_NAME).collection(SAVES_COLLECTION);
+}
+
+// clean username
+function normalizeUsername(username) {
+  return username.trim().toLowerCase();
+}
+
+// clean title for saves
+function cleanSaveTitle(title) {
+  return typeof title === "string" && title.trim() ? title.trim() : "Untitled Save";
+}
+
+// SHA-256 
+function hashPassword(password) {
+  return crypto.createHash("sha256").update(password).digest("hex");
+}
+
+function isValidCredential(username, password) {
+  return Boolean(username && password && username.trim() && password.trim());
+}
+
+// auth helper
+async function upsertSession(token, userId) {
+  await connectMongo();
+  await getSessionsCollection().updateOne(
+    { token },
+    {
+      $set: { token, userId, updatedAt: new Date() },
+      $setOnInsert: { createdAt: new Date() },
+    },
+    { upsert: true }
+  );
+}
+
+// auth helper
+async function getSessionUser(token) {
+  if (!token) return null;
+  await connectMongo();
+  const session = await getSessionsCollection().findOne({ token });
+  if (!session) return null;
+  return getUsersCollection().findOne({ _id: session.userId });
+}
+
+
+// auth helper
+function getTokenFromRequest(req) {
+  return req.headers.authorization?.replace(/^Bearer\s+/i, "") || req.query.token || req.body?.token || null;
+}
+
+// auth helper
+async function requireAuthUser(req) {
+  const token = getTokenFromRequest(req);
+  return getSessionUser(token);
+}
+
+// stream output
+async function streamChatCompletion({ model, prompt, onChunk }) {
+  const response = await fetch(AI_API.baseUrl, {
+    method: "POST",
+    headers: getAiHeaders(),
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: prompt }],
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed, status code: ${response.status}`);
+  }
+
+  const decoder = new TextDecoder("utf-8");
+  
+  let buffer = "";
+  let fullMessage = "";
+
+  for await (const chunk of response.body) {
+    buffer += decoder.decode(chunk, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.trim() || !line.startsWith("data: ")) continue;
+
+      const payload = line.replace("data: ", "").trim();
+      if (payload === "[DONE]") return fullMessage;
+
+      try {
+        const data = JSON.parse(payload);
+        const delta = data.choices[0]?.delta?.content;
+        if (delta) {
+          fullMessage += delta;
+          onChunk(delta);
+        }
+      } catch (error) {
+        console.error("Error parsing stream chunk:", error, line);
+      }
+    }
+  }
+
+  return fullMessage;
+}
+
+// data AI: summarize the last conversation
+async function summarizeConversation(socket, currentInput, aiResponse) {
+  
+  const prompt = [
+    "Summarize and organize the following conversation for AI to read in a few short and concise sentences.",
+    "Include settings, time, location, important events, interactions, and characters.",
+    "",
+    `[User]: ${currentInput}`,
+    "",
+    `[GameMaster]: ${aiResponse}`,
+  ].join("\n");
 
   try {
-
-    // send a request and wait for the response
-    const response = await fetch(API_BASE_URL, {
+    const response = await fetch(AI_API.baseUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.AI_API_KEY}`,
-      },
+      headers: getAiHeaders(),
       body: JSON.stringify({
-        model: DATA_MODEL_ID,
+        model: AI_API.dataModel,
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -145,42 +432,37 @@ async function summarizeData(socket, currentInput, response) {
     }
 
     const data = await response.json();
-    console.log(data);
-    // get the message
-    const aiMessage = data.choices[0].message.content;
-
-    // send back the response
-    socket.emit("data_response", aiMessage);
+    socket.emit("data_response", data.choices[0].message.content);
   } catch (error) {
-    console.error("API error:", error);
     socket.emit("data_response", `[Error]: ${error.message}`);
   }
-
 }
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server is up, visit http://localhost:${PORT}`);
+function getAiHeaders() {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${process.env.AI_API_KEY}`,
+  };
+}
+
+// boot the server
+async function bootstrap() {
+  await connectMongo();
+  await ensureIndexes();
+  httpServer.listen(PORT, () => {
+    console.log(`Server is up, visit http://localhost:${PORT}`);
+  });
+}
+
+// create index for users, sessions, saves
+async function ensureIndexes() {
+  await getUsersCollection().createIndex({ username: 1 }, { unique: true });
+  await getSessionsCollection().createIndex({ token: 1 }, { unique: true });
+  await getSessionsCollection().createIndex({ userId: 1 });
+  await getSavesCollection().createIndex({ userId: 1, updatedAt: -1 });
+}
+
+bootstrap().catch((error) => {
+  console.error("Server bootstrap failed:", error);
+  process.exit(1);
 });
-
-async function runDB() {
-  try {
-    // Connect the client to the VPS server
-    await client.connect();
-    
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB on db.davidchen.me!");
-
-    // --- YOUR APP LOGIC GOES HERE ---
-    // Example: const myDatabase = client.db("myGameData");
-    // Example: const usersCollection = myDatabase.collection("users");
-
-  } catch (error) {
-    console.error("Connection failed! Check your IP, UFW firewall, or password.", error);
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // (In a continuous web server, you would leave this open)
-    await client.close();
-  }
-}
