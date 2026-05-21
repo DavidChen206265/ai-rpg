@@ -9,8 +9,33 @@ const io = new Server(server);
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
-// Pull the connection string from your .env file
-const uri = process.env.MONGODB_URI;
+const DEFAULT_MONGODB_URI = "mongodb://127.0.0.1:27017/ai-rpg";
+const uri = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
+
+function assertLocalMongoUri(mongoUri) {
+  if (mongoUri.startsWith("mongodb+srv://")) {
+    throw new Error("MONGODB_URI must use a local mongodb:// URI, not mongodb+srv://.");
+  }
+
+  const match = mongoUri.match(/^mongodb:\/\/([^/?#]+)/);
+  if (!match) {
+    throw new Error("MONGODB_URI must be a valid mongodb:// URI.");
+  }
+
+  const hosts = match[1].split(",").map((host) => {
+    const withoutAuth = host.includes("@") ? host.slice(host.lastIndexOf("@") + 1) : host;
+    return withoutAuth.replace(/^\[/, "").replace(/\](:\d+)?$/, "").replace(/:\d+$/, "");
+  });
+
+  const allowedHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  const nonLocalHosts = hosts.filter((host) => !allowedHosts.has(host));
+
+  if (nonLocalHosts.length > 0) {
+    throw new Error(`MongoDB connections are restricted to localhost. Refused: ${nonLocalHosts.join(", ")}`);
+  }
+}
+
+assertLocalMongoUri(uri);
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -165,19 +190,19 @@ server.listen(PORT, () => {
 
 async function runDB() {
   try {
-    // Connect the client to the VPS server
+    // Connect only to the local MongoDB instance.
     await client.connect();
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB on db.davidchen.me!");
+    console.log("Connected to local MongoDB.");
 
     // --- YOUR APP LOGIC GOES HERE ---
     // Example: const myDatabase = client.db("myGameData");
     // Example: const usersCollection = myDatabase.collection("users");
 
   } catch (error) {
-    console.error("Connection failed! Check your IP, UFW firewall, or password.", error);
+    console.error("Local MongoDB connection failed. Check mongod status, bindIp, and credentials.", error);
   } finally {
     // Ensures that the client will close when you finish/error
     // (In a continuous web server, you would leave this open)
