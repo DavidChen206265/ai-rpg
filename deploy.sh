@@ -89,7 +89,6 @@ assert_local_mongo_uri() {
 }
 
 missing_env=()
-has_env_value "AI_API_KEY" || missing_env+=("AI_API_KEY")
 
 if [ "${#missing_env[@]}" -gt 0 ]; then
   echo "Missing required environment variables: ${missing_env[*]}"

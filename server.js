@@ -53,6 +53,10 @@ const API_BASE_URL = "https://gcli.ggchan.dev/v1/chat/completions";
 const MAIN_MODEL_ID = "gemini-3.1-pro-preview"; 
 const DATA_MODEL_ID = "gemini-3-flash-preview"; 
 
+if (!process.env.AI_API_KEY) {
+  console.warn("AI_API_KEY is not set. AI requests will fail until it is configured in .env.");
+}
+
 runDB().catch(console.dir);
 
 // after a client connected
