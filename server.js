@@ -101,10 +101,15 @@ app.get("/api/saves/:id", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const save = await getSavesCollection().findOne({
-      _id: new ObjectId(req.params.id),
-      userId: user._id,
-    });
+    const save = await getSavesCollection().findOne(
+      {
+        _id: new ObjectId(req.params.id),
+        userId: user._id,
+      },
+      {
+        projection: { title: 1, gameState: 1, createdAt: 1, updatedAt: 1 },
+      }
+    );
 
     if (!save) {
       return res.status(404).json({ error: "Save not found" });
@@ -200,14 +205,15 @@ app.post("/api/saves", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { title, chatHistory, gameState, questInfo, characterDescription } = req.body || {};
+    const { title, gameState } = req.body || {};
+    if (!gameState || typeof gameState !== "object" || Array.isArray(gameState)) {
+      return res.status(400).json({ error: "Game state is required." });
+    }
+
     const result = await getSavesCollection().insertOne({
       userId: user._id,
       title: cleanSaveTitle(title),
-      chatHistory: Array.isArray(chatHistory) ? chatHistory : [],
-      gameState: gameState || {},
-      questInfo: questInfo || "",
-      characterDescription: characterDescription || "",
+      gameState,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -229,11 +235,11 @@ app.put("/api/saves/:id", async (req, res) => {
     // check for what to update
     const update = {};
     if (typeof req.body?.title === "string") update.title = cleanSaveTitle(req.body.title);
-    if (Array.isArray(req.body?.chatHistory)) update.chatHistory = req.body.chatHistory;
-    if (req.body?.gameState) update.gameState = req.body.gameState;
-    if (typeof req.body?.questInfo === "string") update.questInfo = req.body.questInfo;
-    if (typeof req.body?.characterDescription === "string") {
-      update.characterDescription = req.body.characterDescription;
+    if (req.body?.gameState) {
+      if (typeof req.body.gameState !== "object" || Array.isArray(req.body.gameState)) {
+        return res.status(400).json({ error: "Game state must be an object." });
+      }
+      update.gameState = req.body.gameState;
     }
     update.updatedAt = new Date();
 

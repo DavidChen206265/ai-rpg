@@ -233,7 +233,7 @@ function createSaveSnapshot() {
 }
 
 function applySaveSnapshot(snapshot = {}) {
-  gameState.chatHistory = normalizeSavedHistory(snapshot.chatHistory);
+  gameState.chatHistory = Array.isArray(snapshot.chatHistory) ? snapshot.chatHistory : [];
   gameState.eventMemory = new Set(snapshot.eventMemory || []);
   gameState.systemPrompt = snapshot.systemPrompt || gameState.systemPrompt;
   gameState.questInfo = snapshot.questInfo || gameState.questInfo;
@@ -416,10 +416,7 @@ async function saveCurrentGame() {
 
   const payload = {
     title: gameState.saveTitle,
-    chatHistory: gameState.chatHistory,
     gameState: createSaveSnapshot(),
-    questInfo: gameState.questInfo,
-    characterDescription: gameState.characterDescription,
   };
 
   const response = gameState.saveId
@@ -457,8 +454,10 @@ function finishAiResponse() {
     if (gameState.isGameOver) {
       enterGameEndState();
     } else {
-      saveCurrentGame().catch((error) => appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`));
-      console.error(error.message);
+      saveCurrentGame().catch((error) => {
+        appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+        console.error(error.message);
+      });
     }
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
@@ -629,13 +628,12 @@ async function loadActiveSave() {
   gameState.saveId = save._id;
   gameState.saveTitle = save.title;
 
+  if (!save.gameState || typeof save.gameState !== "object") {
+    throw new Error("Save data is invalid.");
+  }
+
   // apply save's data to local 
-  applySaveSnapshot({
-    ...(save.gameState || {}),
-    chatHistory: save.gameState?.chatHistory || save.chatHistory,
-    questInfo: save.gameState?.questInfo || save.questInfo,
-    characterDescription: save.gameState?.characterDescription || save.characterDescription,
-  });
+  applySaveSnapshot(save.gameState);
   gameState.saveTitle = save.title || gameState.saveTitle;
 
   localStorage.setItem(ACTIVE_SAVE_KEY, save._id);
