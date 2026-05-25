@@ -190,7 +190,7 @@ function clearSession() {
   localStorage.removeItem(AUTH_USER_KEY);
   localStorage.removeItem(ACTIVE_SAVE_KEY);
   localStorage.removeItem(ACTIVE_SAVE_TITLE_KEY);
-  window.location.href = "/login";
+  window.location.href = "/login.html";
 }
 
 function renderAuthAction() {
@@ -451,7 +451,7 @@ function resetStreamState() {
 // save the current game to server
 async function saveCurrentGame() {
   if (!gameState.token) {
-    window.location.href = "/login";
+    window.location.href = "/login.html";
     return;
   }
 
@@ -724,7 +724,7 @@ async function loadActiveSave() {
 // check for user status
 async function checkValidUser() {
   if (!gameState.token) {
-    window.location.href = "/login";
+    window.location.href = "/login.html";
     return;
   }
 

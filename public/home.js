@@ -24,7 +24,7 @@ function clearSession() {
   localStorage.removeItem(AUTH_USER_KEY);
   localStorage.removeItem(ACTIVE_SAVE_KEY);
   localStorage.removeItem(ACTIVE_SAVE_TITLE_KEY);
-  window.location.href = "/login";
+  window.location.href = "/login.html";
 }
 
 function renderAuthAction() {
@@ -89,7 +89,7 @@ async function loadSaves() {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) {
     elements.saveList.innerHTML =
-      '<p class="empty-state">Please <a href="/login">log in</a> to view saves.</p>';
+      '<p class="empty-state">Please <a href="/login.html">log in</a> to view saves.</p>';
     return;
   }
 
@@ -134,7 +134,7 @@ async function loadSaves() {
       localStorage.setItem(ACTIVE_SAVE_TITLE_KEY, button.dataset.saveTitle || "Untitled Save");
 
       // jump to chat page with the saveId
-      window.location.href = `/chat?save=${encodeURIComponent(saveId)}`; 
+      window.location.href = `/chat.html?save=${encodeURIComponent(saveId)}`; 
     });
   });
 
