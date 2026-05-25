@@ -16,6 +16,8 @@ const DATABASE_NAME = "ai_rpg_db";
 const USERS_COLLECTION = "users";
 const SESSIONS_COLLECTION = "sessions";
 const SAVES_COLLECTION = "game_saves";
+const DEFAULT_MONGODB_URI = "mongodb://127.0.0.1:27017/ai-rpg";
+const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
 
 // AI
 const AI_API = {
@@ -29,7 +31,8 @@ const httpServer = http.createServer(app);
 const io = new Server(httpServer);
 
 // MongoDB client
-const mongoClient = new MongoClient(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017", {
+assertLocalMongoUri(MONGODB_URI);
+const mongoClient = new MongoClient(MONGODB_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -323,6 +326,29 @@ function isValidCredential(username, password) {
   return Boolean(username && password && username.trim() && password.trim());
 }
 
+function assertLocalMongoUri(mongoUri) {
+  if (mongoUri.startsWith("mongodb+srv://")) {
+    throw new Error("MONGODB_URI must use a local mongodb:// URI, not mongodb+srv://.");
+  }
+
+  const match = mongoUri.match(/^mongodb:\/\/([^/?#]+)/);
+  if (!match) {
+    throw new Error("MONGODB_URI must be a valid mongodb:// URI.");
+  }
+
+  const hosts = match[1].split(",").map((host) => {
+    const withoutAuth = host.includes("@") ? host.slice(host.lastIndexOf("@") + 1) : host;
+    return withoutAuth.replace(/^\[/, "").replace(/\](:\d+)?$/, "").replace(/:\d+$/, "");
+  });
+
+  const allowedHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  const nonLocalHosts = hosts.filter((host) => !allowedHosts.has(host));
+
+  if (nonLocalHosts.length > 0) {
+    throw new Error(`MongoDB connections are restricted to localhost. Refused: ${nonLocalHosts.join(", ")}`);
+  }
+}
+
 // auth helper
 async function upsertSession(token, userId) {
   await connectMongo();
@@ -447,6 +473,10 @@ function getAiHeaders() {
 
 // boot the server
 async function bootstrap() {
+  if (!process.env.AI_API_KEY) {
+    console.warn("AI_API_KEY is not set. AI requests will fail until it is configured in .env.");
+  }
+
   await connectMongo();
   await ensureIndexes();
   httpServer.listen(PORT, () => {
