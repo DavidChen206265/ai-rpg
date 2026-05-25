@@ -429,6 +429,7 @@ function updateChoices(responseText) {
     Number(choicePayload.choice2difficulty || 10),
     Number(choicePayload.choice3difficulty || 10),
   ];
+  console.log(choicePayload.choice1difficulty + " " + choicePayload.choice2difficulty + " " + choicePayload.choice3difficulty);
 
   // update choices
   gameState.choices = [
@@ -514,7 +515,6 @@ function finishAiResponse() {
         console.error(error.message);
       });
     }
-    console.log(gameState.choiceDifficulties[0] + " " + gameState.choiceDifficulties[1] + " " + gameState.choiceDifficulties[2]);
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
