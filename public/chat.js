@@ -8,12 +8,18 @@ const SELECTED_CLASS = "is-selected";
 const HIDDEN_CLASS = "is-hidden";
 
 // localstorage
+// auth keys
 const AUTH_TOKEN_KEY = "ai_rpg_token";
 const AUTH_USER_KEY = "ai_rpg_user";
+
+// save keys
 const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
 const ACTIVE_SAVE_TITLE_KEY = "ai_rpg_active_save_title";
+
+// search for saveId from url (when user load a save from the homepage)
 const requestedSaveId = new URLSearchParams(window.location.search).get("save") || "";
 
+// load the selected save
 if (requestedSaveId) {
   localStorage.setItem(ACTIVE_SAVE_KEY, requestedSaveId);
 }
@@ -287,19 +293,29 @@ JSON format:
 }`;
 }
 
-
+// select a quest (from 1 to 3)
 function selectQuest(questNumber, options = {}) {
   const quest = quests[questNumber];
-  if (!quest) return;
+  if (!quest) {
+    console.error("[Error] There is no quest " + questNumber + ".")
+    return;
+  };
 
+  // update gameState
   gameState.questInfo = quest.prompt;
   gameState.selectedQuestName = quest.name;
+
   elements.questBlurb.textContent = quest.blurb;
+
   if (options.reveal !== false) {
     showElement(elements.questBlurb);
     showElement(elements.confirmQuest);
   }
+
+  // update UI
   setSelectedButton(questButtons, questNumber - 1);
+
+  // update prompt
   updateSystemPrompt();
 }
 
@@ -308,10 +324,15 @@ function confirmQuest() {
   showElement(elements.characterSelect);
 }
 
+// select a character (from 1 to 3)
 function selectCharacter(characterNumber, options = {}) {
   const character = characters[characterNumber];
-  if (!character) return;
+  if (!character) {
+    console.error("[Error] There is no character " + characterNumber + ".")
+    return;
+  };
 
+  // update gameState
   gameState.characterDescription = character.description;
   gameState.selectedCharacterName = character.name;
   gameState.maxHealth = character.maxHealth;
@@ -324,8 +345,12 @@ function selectCharacter(characterNumber, options = {}) {
     showElement(elements.characterProfile);
     showElement(elements.startGame);
   }
+
+  // update UI
   setSelectedButton(characterButtons, characterNumber - 1);
   renderHealth();
+
+  // update prompt
   updateSystemPrompt();
 }
 
@@ -337,6 +362,7 @@ function activateDevMode() {
   updateSystemPrompt();
 }
 
+// extract json from the AI response
 function extractChoicePayload(responseText) {
   const startIndex = responseText.indexOf(CHOICES_START_TAG);
   const endIndex = responseText.indexOf(CHOICES_END_TAG);
@@ -349,6 +375,7 @@ function extractChoicePayload(responseText) {
   return JSON.parse(jsonText);
 }
 
+// cut off the json part from the visible response
 function stripChoicePayload(responseText) {
   const startIndex = responseText.indexOf(CHOICES_START_TAG);
   const endIndex = responseText.indexOf(CHOICES_END_TAG);
@@ -360,13 +387,16 @@ function stripChoicePayload(responseText) {
   return responseText.slice(0, startIndex) + responseText.slice(endIndex + CHOICES_END_TAG.length);
 }
 
+// update gameState 
 function updateChoices(responseText) {
   const choicePayload = extractChoicePayload(responseText);
 
+  // check for game over
   if (choicePayload.gameOver === true || choicePayload.gameOver === "true") {
     gameState.isGameOver = true;
   }
 
+  // update health
   gameState.currentHealth =
     gameState.currentHealth -
     Number(choicePayload.healthLost || 0) +
@@ -383,44 +413,52 @@ function updateChoices(responseText) {
     elements.healthLabel.textContent = "You Died!";
   }
 
+  // update currentProgress
   if (choicePayload.progression === 1 || choicePayload.progression === "1") {
     gameState.currentProgress++;
   }
 
+  // update system prompt
   updateSystemPrompt();
 
+  // update choiceDifficulties
   gameState.choiceDifficulties = [
     Number(choicePayload.choice1difficulty || 10),
     Number(choicePayload.choice2difficulty || 10),
     Number(choicePayload.choice3difficulty || 10),
   ];
 
+  // update choices
   gameState.choices = [
-    choicePayload.choice1 || "Choice one",
-    choicePayload.choice2 || "Choice two",
-    choicePayload.choice3 || "Choice three",
+    choicePayload.choice1 || "[Choice Not Received]",
+    choicePayload.choice2 || "[Choice Not Received]",
+    choicePayload.choice3 || "[Choice Not Received]",
   ];
   renderChoices();
 
   return stripChoicePayload(responseText);
 }
 
+// clear all responses and make choices clickable
 function resetStreamState() {
   streamState.fullResponse = "";
   streamState.visibleResponse = "";
   streamState.isChoicesHidden = false;
 }
 
+// save the current game to server
 async function saveCurrentGame() {
   if (!gameState.token) {
     window.location.href = "/login";
     return;
   }
 
+  // generate a default title if this is a new save
   if (!gameState.saveId) {
     gameState.saveTitle = makeDefaultSaveTitle();
   }
 
+  // save data to server
   const payload = {
     title: gameState.saveTitle,
     gameState: createSaveSnapshot(),
@@ -443,6 +481,7 @@ async function saveCurrentGame() {
     throw new Error(data.error || "Failed to save game.");
   }
 
+  // use this save locally
   if (data.saveId) {
     gameState.saveId = data.saveId;
     localStorage.setItem(ACTIVE_SAVE_KEY, data.saveId);
@@ -450,14 +489,21 @@ async function saveCurrentGame() {
   }
 }
 
+// clear response & update gameState while an AI stream is finished
 function finishAiResponse() {
   try {
+
+    // clean the response
     const cleanResponse = updateChoices(streamState.fullResponse);
     gameState.lastVisibleResponse = streamState.visibleResponse;
     setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
+
+    // update chatHistory
     gameState.chatHistory.push(
       `Response ${Math.floor(gameState.chatHistory.length / 2)}: ${cleanResponse}`
     );
+
+    // check for gameOver
     if (gameState.isGameOver) {
       enterGameEndState();
     } else {
@@ -497,6 +543,7 @@ function renderChatHistory() {
   setChatHtml(rendered);
 }
 
+// when game is ended
 function enterGameEndState() {
   hideElement(elements.actionForm);
   hideElement(elements.questSelect);
@@ -507,6 +554,7 @@ function enterGameEndState() {
   showElement(elements.showHistory);
   setChoiceControlsDisabled(true);
 
+  // only show the last response
   if (gameState.lastVisibleResponse) {
     setChatHtml(`<div class="msg-ai">${gameState.lastVisibleResponse}</div>`);
   }
@@ -515,26 +563,29 @@ function enterGameEndState() {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
   });
-
 }
 
+// formally get into a chat 
 function restoreInteractiveChat() {
+  showElement(elements.chatWindow);
   showElement(elements.healthContainer);
   showElement(elements.actionForm);
+  setChoiceControlsDisabled(false);
+  renderChoices();
+
   hideElement(elements.showHistory);
   hideElement(elements.questSelect);
   hideElement(elements.characterSelect);
   hideElement(elements.startGame);
-  showElement(elements.chatWindow);
-  setChoiceControlsDisabled(false);
-  renderChoices();
 }
 
+// handle chunks in the main AI's response stream
 function handleAiChunk(message) {
   streamState.fullResponse += message.slice(9);
 
   if (streamState.isChoicesHidden) return;
 
+  // hide json from visible response
   const hiddenAfterIndex = streamState.fullResponse.indexOf(CHOICES_START_TAG);
   if (hiddenAfterIndex === -1) {
     streamState.visibleResponse = streamState.fullResponse;
@@ -546,6 +597,7 @@ function handleAiChunk(message) {
   setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
 }
 
+// build the prompt for main AI
 function buildPrompt(inputText) {
   let request = gameState.systemPrompt;
 
@@ -597,6 +649,7 @@ function sendMessage() {
   elements.userInput.value = "";
 }
 
+// apply choice and auto send to server
 function applyChoice(choiceNumber) {
   const choiceIndex = choiceNumber - 1;
   const selectedButton = choiceButtons[choiceIndex];
@@ -605,14 +658,15 @@ function applyChoice(choiceNumber) {
   // generate luck
   const roll = Math.floor(Math.random() * 20) + 1 + 5;
   if (roll < gameState.choiceDifficulties[choiceIndex]) {
-    gameState.pendingLuckMessage = "The action the user just tried to do will fail";
+    gameState.pendingLuckMessage = "The action the user just tried to do will fail!";
   }
 
+  // update input & send to server
   elements.userInput.value = selectedButton.textContent;
   sendMessage();
 }
 
-// auth helpers
+// auth helper
 function authHeaders() {
   return {
     "Content-Type": "application/json",
@@ -655,6 +709,8 @@ async function loadActiveSave() {
   if (gameState.isGameOver) {
     enterGameEndState();
   } else {
+
+    // show chat history and continue the game
     renderChatHistory();
     restoreInteractiveChat();
   }
@@ -744,6 +800,8 @@ socket.on("data_response", (message) => {
     appendChatHtml(`<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`);
     console.error(message);
   } else {
+
+    // update gameState and auto save
     gameState.eventMemory.add(message);
     saveCurrentGame().catch((error) => {
       appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
@@ -751,6 +809,7 @@ socket.on("data_response", (message) => {
     });
   }
 
+  // check for gameOver
   if (gameState.isGameOver) {
     hideElement(elements.actionForm);
     setChoiceControlsDisabled(true);
@@ -761,10 +820,11 @@ socket.on("data_response", (message) => {
 
 setButtonEvents();
 selectQuest(1, { reveal: true });
-selectCharacter(1, { reveal: false });
+selectCharacter(1, { reveal: true });
 if (gameState.saveId) {
   hideElement(elements.questSelect);
   hideElement(elements.characterSelect);
+  hideElement(elements.characterBlurb);
   hideElement(elements.startGame);
 }
 renderAuthAction();

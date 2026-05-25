@@ -256,6 +256,12 @@ button:disabled {
   background: #365778;
 }
 
+.character-blurb {
+  min-height: 120px;
+  border-radius: 8px;
+  background: #365778;
+}
+
 .character-profile.profile-wizard {
   background: #4f46e5;
 }

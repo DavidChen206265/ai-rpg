@@ -10,6 +10,7 @@ const elements = {
   saveList: document.getElementById("save-list"),
 };
 
+// get the auth token for request headers
 function authHeaders() {
   return {
     "Content-Type": "application/json",
@@ -50,6 +51,7 @@ function safeJsonParse(text) {
   }
 }
 
+// save actions
 async function renameSave(saveId, currentTitle) {
   const title = prompt("Rename save", currentTitle);
   if (!title || title.trim() === currentTitle) return;
@@ -82,6 +84,7 @@ async function deleteSave(saveId) {
   await loadSaves();
 }
 
+// show all saves
 async function loadSaves() {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) {
@@ -90,6 +93,7 @@ async function loadSaves() {
     return;
   }
 
+  // get all saves for the current user
   const response = await fetch("/api/saves", { headers: authHeaders() });
   const data = safeJsonParse(await response.text());
   if (!response.ok) {
@@ -120,12 +124,17 @@ async function loadSaves() {
     )
     .join("");
 
+  // display save actions
   elements.saveList.querySelectorAll("[data-open-save]").forEach((button) => {
     button.addEventListener("click", () => {
+
+      // load a save
       const saveId = button.dataset.openSave;
       localStorage.setItem(ACTIVE_SAVE_KEY, saveId);
       localStorage.setItem(ACTIVE_SAVE_TITLE_KEY, button.dataset.saveTitle || "Untitled Save");
-      window.location.href = `/chat?save=${encodeURIComponent(saveId)}`;
+
+      // jump to chat page with the saveId
+      window.location.href = `/chat?save=${encodeURIComponent(saveId)}`; 
     });
   });
 
@@ -155,6 +164,8 @@ elements.refresh.addEventListener("click", () => {
 
 // create a new chat
 elements.newChat.addEventListener("click", () => {
+
+  // remove the current save's keys
   localStorage.removeItem(ACTIVE_SAVE_KEY);
   localStorage.removeItem(ACTIVE_SAVE_TITLE_KEY);
 });
