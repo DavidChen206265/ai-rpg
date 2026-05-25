@@ -514,7 +514,7 @@ function finishAiResponse() {
         console.error(error.message);
       });
     }
-    console.log(gameState.choice1difficulty + " " + gameState.choice2difficulty + " " + gameState.choice3difficulty);
+    console.log(gameState.choiceDifficulties[0] + " " + gameState.choiceDifficulties[1] + " " + gameState.choiceDifficulties[2]);
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
