@@ -17,6 +17,7 @@ function authHeaders() {
   };
 }
 
+// clear all local data while logout
 function clearSession() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
@@ -106,7 +107,7 @@ async function loadSaves() {
     .map(
       (save) => `
         <div class="save-card">
-          <button class="save-main" type="button" data-open-save="${save._id}">
+          <button class="save-main" type="button" data-open-save="${save._id}" data-save-title="${save.title}">
             <strong>${save.title}</strong>
             <span>Last conversation: ${formatDate(save.updatedAt || save.createdAt)}</span>
           </button>
@@ -122,6 +123,7 @@ async function loadSaves() {
   elements.saveList.querySelectorAll("[data-open-save]").forEach((button) => {
     button.addEventListener("click", () => {
       localStorage.setItem(ACTIVE_SAVE_KEY, button.dataset.openSave);
+      localStorage.setItem(ACTIVE_SAVE_TITLE_KEY, button.dataset.saveTitle || "Untitled Save");
       window.location.href = "/chat";
     });
   });

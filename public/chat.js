@@ -132,6 +132,10 @@ const streamState = {
   isChoicesHidden: false,
 };
 
+const pageState = {
+  hasLoadedSave: false,
+};
+
 function showElement(element) {
   element.classList.remove(HIDDEN_CLASS);
 }
@@ -603,6 +607,7 @@ function authHeaders() {
 async function loadActiveSave() {
   if (!gameState.saveId) return false;
 
+  // get the active save's data from server
   const response = await fetch(`/api/saves/${gameState.saveId}`, { headers: authHeaders() });
   const data = await response.json();
   if (!response.ok) {
@@ -612,6 +617,8 @@ async function loadActiveSave() {
   const save = data.save;
   gameState.saveId = save._id;
   gameState.saveTitle = save.title;
+
+  // apply save's data to local 
   applySaveSnapshot({
     ...(save.gameState || {}),
     chatHistory: save.gameState?.chatHistory || save.chatHistory,
@@ -623,10 +630,12 @@ async function loadActiveSave() {
   localStorage.setItem(ACTIVE_SAVE_KEY, save._id);
   localStorage.setItem(ACTIVE_SAVE_TITLE_KEY, save.title);
 
+  // update UI
   updateSystemPrompt();
   renderHealth();
   renderChoices();
 
+  // check for game over
   if (gameState.isGameOver) {
     enterGameEndState();
   } else {
@@ -634,6 +643,7 @@ async function loadActiveSave() {
     restoreInteractiveChat();
   }
 
+  pageState.hasLoadedSave = true;
   return true;
 }
 
@@ -653,8 +663,8 @@ async function checkValidUser() {
 
 // buttons
 function setButtonEvents() {
-  elements.title.addEventListener("click", activateDevMode);
-  elements.confirmQuest.addEventListener("click", confirmQuest);
+  elements.title.addEventListener("click", activateDevMode); // use dev mode
+  elements.confirmQuest.addEventListener("click", confirmQuest); 
   elements.startGame.addEventListener("click", sendMessage);
   elements.showHistory.addEventListener("click", () => {
     renderChatHistory();
@@ -680,7 +690,9 @@ function setButtonEvents() {
 }
 
 socket.on("connect", () => {
-  setChatHtml("<div>System: Connected to the server.</div>");
+  if (!pageState.hasLoadedSave && elements.chatWindow.textContent.trim() === "Connecting...") {
+    setChatHtml("<div>System: Connected to the server.</div>");
+  }
 });
 
 // handle main AI response

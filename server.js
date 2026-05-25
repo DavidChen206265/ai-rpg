@@ -127,11 +127,14 @@ app.post("/api/auth/register", async (req, res) => {
     await connectMongo();
     const users = getUsersCollection();
     const normalizedUsername = normalizeUsername(username);
+
+    // check for duplicated usernames
     const existing = await users.findOne({ username: normalizedUsername });
     if (existing) {
       return res.status(409).json({ error: "Username already exists." });
     }
 
+    // create a new user
     const userDoc = {
       username: normalizedUsername,
       displayName: username.trim(),
@@ -144,6 +147,7 @@ app.post("/api/auth/register", async (req, res) => {
     const sessionToken = crypto.randomUUID();
     await upsertSession(sessionToken, result.insertedId);
 
+    // auto login
     res.json({
       user: {
         id: result.insertedId.toString(),
@@ -166,6 +170,8 @@ app.post("/api/auth/login", async (req, res) => {
 
     await connectMongo();
     const users = getUsersCollection();
+
+    // check for username and password
     const user = await users.findOne({ username: normalizeUsername(username) });
     if (!user || user.passwordHash !== hashPassword(password)) {
       return res.status(401).json({ error: "Invalid username or password." });
