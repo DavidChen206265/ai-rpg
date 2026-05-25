@@ -514,6 +514,7 @@ function finishAiResponse() {
         console.error(error.message);
       });
     }
+    console.log(gameState.choice1difficulty + " " + gameState.choice2difficulty + " " + gameState.choice3difficulty);
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
@@ -658,7 +659,8 @@ function applyChoice(choiceNumber) {
   if (!selectedButton || !selectedButton.textContent) return;
 
   // generate luck
-  const roll = Math.floor(Math.random() * 20) + 1 + 5;
+  const roll = Math.floor(Math.random() * 20) + 1 + 2;
+  console.log("luck: " + roll);
   if (roll < gameState.choiceDifficulties[choiceIndex]) {
     gameState.pendingLuckMessage = "The action the user just tried to do will fail!";
   }
