@@ -178,6 +178,7 @@ function appendChatHtml(html) {
   elements.chatWindow.innerHTML += html;
 }
 
+// logout button
 function clearSession() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
@@ -197,10 +198,12 @@ function renderAuthAction() {
   });
 }
 
+// generate a default save title for the new save
 function makeDefaultSaveTitle() {
   return `${gameState.selectedQuestName} ${gameState.selectedCharacterName}`;
 }
 
+// health bar
 function renderHealth() {
   const safeHealth = Math.max(gameState.currentHealth, 0);
   const healthPercent = safeHealth / gameState.maxHealth;
@@ -211,6 +214,7 @@ function renderHealth() {
   elements.healthLabel.classList.toggle("is-dark", movePercent > 40);
 }
 
+// save&load system helper
 function createSaveSnapshot() {
   return {
     chatHistory: gameState.chatHistory,
@@ -232,6 +236,7 @@ function createSaveSnapshot() {
   };
 }
 
+// load a save to the current chat
 function applySaveSnapshot(snapshot = {}) {
   gameState.chatHistory = Array.isArray(snapshot.chatHistory) ? snapshot.chatHistory : [];
   gameState.eventMemory = new Set(snapshot.eventMemory || []);
@@ -253,6 +258,7 @@ function applySaveSnapshot(snapshot = {}) {
   gameState.lastVisibleResponse = snapshot.lastVisibleResponse || "";
 }
 
+// update the system prompt by  quest & character user selected
 function updateSystemPrompt() {
   gameState.systemPrompt = `Highest Priority:
 
@@ -280,6 +286,7 @@ JSON format:
   "progression": 0
 }`;
 }
+
 
 function selectQuest(questNumber, options = {}) {
   const quest = quests[questNumber];
@@ -753,8 +760,8 @@ socket.on("data_response", (message) => {
 });
 
 setButtonEvents();
-selectQuest(1, { reveal: false });
-selectCharacter(2, { reveal: false });
+selectQuest(1, { reveal: true });
+selectCharacter(1, { reveal: false });
 if (gameState.saveId) {
   hideElement(elements.questSelect);
   hideElement(elements.characterSelect);

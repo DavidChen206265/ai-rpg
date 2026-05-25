@@ -13,6 +13,7 @@ const elements = {
 
 let mode = "login"; // "login" "register"
 
+// set mode as login or register
 function setMode(nextMode) {
   mode = nextMode;
   elements.tabLogin.classList.toggle("is-active", mode === "login");
@@ -33,6 +34,7 @@ async function submitAuth(event) {
   const password = elements.password.value.trim();
 
   try {
+    // send username & password to server
     const response = await fetch(`/api/auth/${mode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -44,6 +46,7 @@ async function submitAuth(event) {
       throw new Error(data.error || "Authentication failed.");
     }
 
+    // get logged in
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
     window.location.href = "/";
