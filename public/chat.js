@@ -73,14 +73,14 @@ const quests = {
   2: {
     name: "Ninja Office",
     prompt:
-      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon. These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. The final room after room 6 is the boss's office. The boss wields all of the office ninja weapons, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
+      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
     blurb:
       "Infiltrate and take out the leader of a band of office ninjas in their corporate headquarters.",
   },
   3: {
-    name: "WIP",
-    prompt: "",
-    blurb: "WIP quest 3 info.",
+    name: "Timelost Castle",
+    prompt: "The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have roman / greek era puzzles and monsters, then the late middle rooms (rooms 5-6) have victorian puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The appearance of the mad mage is that of a tan-skinned elf with wavy light silver hair and violet iris's, with fine purple medevial clothes.  The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. When the mad mage is defeated, the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is defeated, the user wins the game.",
+    blurb: "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
   },
 };
 
@@ -275,6 +275,8 @@ The user is currently in room ${gameState.currentProgress}.
 You are a game master, running a fantasy game. The user's character is ${gameState.characterDescription} (avoid quoting the character description verbatim). Based on the previous quest information, generate a description of the room the user is currently in. Outside of the items mentioned, the user starts the adventure with no extra gear.
 
 ${gameState.developerMode}
+
+If there is a puzzle or riddle presented to the user, make at least one of the three choices an incorrect answer (but don't make it too obvious) and give it a difficulty of 20, as to make it almost impossible for the user to succeed. There should also be a correct answer, with a difficulty reflecting how hard it would be to actually pull off the solution. (don't make it too difficult however) Avoid having a choice just be "solve the puzzle", the user actually has to deduce which answer solves the puzzle.
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "${CHOICES_START_TAG}" + valid JSON of three choices and their difficulties and whether the game is over as a boolean + "${CHOICES_END_TAG}"
 
