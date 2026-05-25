@@ -122,9 +122,10 @@ async function loadSaves() {
 
   elements.saveList.querySelectorAll("[data-open-save]").forEach((button) => {
     button.addEventListener("click", () => {
-      localStorage.setItem(ACTIVE_SAVE_KEY, button.dataset.openSave);
+      const saveId = button.dataset.openSave;
+      localStorage.setItem(ACTIVE_SAVE_KEY, saveId);
       localStorage.setItem(ACTIVE_SAVE_TITLE_KEY, button.dataset.saveTitle || "Untitled Save");
-      window.location.href = "/chat";
+      window.location.href = `/chat?save=${encodeURIComponent(saveId)}`;
     });
   });
 

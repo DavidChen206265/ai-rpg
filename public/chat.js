@@ -12,6 +12,11 @@ const AUTH_TOKEN_KEY = "ai_rpg_token";
 const AUTH_USER_KEY = "ai_rpg_user";
 const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
 const ACTIVE_SAVE_TITLE_KEY = "ai_rpg_active_save_title";
+const requestedSaveId = new URLSearchParams(window.location.search).get("save") || "";
+
+if (requestedSaveId) {
+  localStorage.setItem(ACTIVE_SAVE_KEY, requestedSaveId);
+}
 
 const elements = {
   authAction: document.getElementById("auth-action"),
@@ -120,7 +125,7 @@ const gameState = {
   pendingLuckMessage: "",
   choices: ["Choice one", "Choice two", "Choice three"],
   lastVisibleResponse: "",
-  saveId: localStorage.getItem(ACTIVE_SAVE_KEY) || "",
+  saveId: requestedSaveId || localStorage.getItem(ACTIVE_SAVE_KEY) || "",
   saveTitle: localStorage.getItem(ACTIVE_SAVE_TITLE_KEY) || "Untitled Save",
   token: localStorage.getItem(AUTH_TOKEN_KEY) || "",
 };
@@ -654,8 +659,17 @@ async function checkValidUser() {
     return;
   }
 
+  if (gameState.saveId) {
+    hideElement(elements.questSelect);
+    hideElement(elements.characterSelect);
+    hideElement(elements.startGame);
+  }
+
   try {
-    await loadActiveSave();
+    const loadedSave = await loadActiveSave();
+    if (!loadedSave) {
+      showElement(elements.questSelect);
+    }
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
   }
@@ -731,5 +745,10 @@ socket.on("data_response", (message) => {
 setButtonEvents();
 selectQuest(1, { reveal: false });
 selectCharacter(2, { reveal: false });
+if (gameState.saveId) {
+  hideElement(elements.questSelect);
+  hideElement(elements.characterSelect);
+  hideElement(elements.startGame);
+}
 renderAuthAction();
 checkValidUser();
