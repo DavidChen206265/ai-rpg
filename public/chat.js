@@ -424,15 +424,15 @@ async function saveCurrentGame() {
 
   const response = gameState.saveId
     ? await fetch(`/api/saves/${gameState.saveId}`, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      })
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    })
     : await fetch("/api/saves", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      });
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
 
   const data = await response.json();
   if (!response.ok) {
@@ -458,9 +458,11 @@ function finishAiResponse() {
       enterGameEndState();
     } else {
       saveCurrentGame().catch((error) => appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`));
+      console.error(error.message);
     }
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+    console.error(error.message);
   } finally {
     resetStreamState();
   }
@@ -503,7 +505,11 @@ function enterGameEndState() {
     setChatHtml(`<div class="msg-ai">${gameState.lastVisibleResponse}</div>`);
   }
 
-  saveCurrentGame().catch((error) => appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`));
+  saveCurrentGame().catch((error) => {
+    appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+    console.error(error.message);
+  });
+
 }
 
 function restoreInteractiveChat() {
@@ -672,13 +678,14 @@ async function checkValidUser() {
     }
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+    console.error(error.message);
   }
 }
 
 // buttons
 function setButtonEvents() {
   elements.title.addEventListener("click", activateDevMode); // use dev mode
-  elements.confirmQuest.addEventListener("click", confirmQuest); 
+  elements.confirmQuest.addEventListener("click", confirmQuest);
   elements.startGame.addEventListener("click", sendMessage);
   elements.showHistory.addEventListener("click", () => {
     renderChatHistory();
@@ -715,6 +722,7 @@ socket.on("ai_stream", (message) => {
     setChatHtml('<div class="msg-ai" id="loading">Thinking...</div>');
   } else if (message.startsWith("[Error]")) {
     appendChatHtml(`<div class="msg-ai" id="loading">${message}</div>`);
+    console.error(message);
     setChoiceControlsDisabled(false);
   } else if (message.startsWith("[Chunk]")) {
     handleAiChunk(message);
@@ -729,9 +737,13 @@ socket.on("ai_stream", (message) => {
 socket.on("data_response", (message) => {
   if (message.startsWith("[Error]")) {
     appendChatHtml(`<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`);
+    console.error(message);
   } else {
     gameState.eventMemory.add(message);
-    saveCurrentGame().catch((error) => appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`));
+    saveCurrentGame().catch((error) => {
+      appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+      console.error(error.message);
+    });
   }
 
   if (gameState.isGameOver) {
