@@ -141,8 +141,6 @@ const gameState = {
   characterDescription: characters[2].description,
   developerMode: "",
   isGameOver: false,
-  maxHealth: characters[2].maxHealth,
-  currentHealth: characters[2].maxHealth,
   currentProgress: 1,
   playerStatus: {
     health: {
@@ -380,12 +378,12 @@ function makeDefaultSaveTitle() {
 
 // health bar
 function renderHealth() {
-  const safeHealth = Math.max(gameState.currentHealth, 0);
-  const healthPercent = safeHealth / gameState.maxHealth;
+  const safeHealth = Math.max(gameState.playerStatus.health.current, 0);
+  const healthPercent = safeHealth / gameState.playerStatus.health.max;
   const movePercent = 100 - 100 * healthPercent;
 
   elements.healthFill.style.transform = `translateX(-${movePercent}%)`;
-  elements.healthLabel.textContent = `${safeHealth}/${gameState.maxHealth}`;
+  elements.healthLabel.textContent = `${safeHealth}/${gameState.playerStatus.health.max}`;
   elements.healthLabel.classList.toggle("is-dark", movePercent > 40);
 }
 
@@ -399,8 +397,6 @@ function createSaveSnapshot() {
     characterDescription: gameState.characterDescription,
     developerMode: gameState.developerMode,
     isGameOver: gameState.isGameOver,
-    maxHealth: gameState.maxHealth,
-    currentHealth: gameState.currentHealth,
     playerStatus: gameState.playerStatus,
     relationships: gameState.relationships,
     skills: gameState.skills,
@@ -429,18 +425,14 @@ function applySaveSnapshot(snapshot = {}) {
     snapshot.characterDescription || gameState.characterDescription;
   gameState.developerMode = snapshot.developerMode || "";
   gameState.isGameOver = Boolean(snapshot.isGameOver);
-  gameState.maxHealth = Number(snapshot.maxHealth || gameState.maxHealth);
-  gameState.currentHealth = Number(
-    snapshot.currentHealth ?? gameState.currentHealth,
+  gameState.playerStatus = snapshot.playerStatus;
+  gameState.relationships = snapshot.relationships;
+  gameState.skills = snapshot.skills;
+  gameState.inventory = snapshot.inventory;
+  gameState.achievements = snapshot.achievements;
+  gameState.currentProgress = Number(
+    snapshot.currentProgress || gameState.currentProgress,
   );
-  gameState.playerStatus = snapshot.playerStatus,
-    gameState.relationships = snapshot.relationships,
-    gameState.skills = snapshot.skills,
-    gameState.inventory = snapshot.inventory,
-    gameState.achievements = snapshot.achievements,
-    gameState.currentProgress = Number(
-      snapshot.currentProgress || gameState.currentProgress,
-    );
   gameState.selectedQuestName =
     snapshot.selectedQuestName || gameState.selectedQuestName;
   gameState.selectedCharacterName =
@@ -601,8 +593,8 @@ function selectCharacter(characterNumber, options = {}) {
   // update gameState
   gameState.characterDescription = character.description;
   gameState.selectedCharacterName = character.name;
-  gameState.maxHealth = character.maxHealth;
-  gameState.currentHealth = character.maxHealth;
+  gameState.playerStatus.health.max = character.maxHealth;
+  gameState.playerStatus.health.current = character.maxHealth;
   elements.characterBlurb.textContent = character.blurb;
   elements.characterProfile.className = `character-profile ${character.profileClass}`;
 
@@ -1003,7 +995,7 @@ function authHeaders() {
   };
 }
 
-// load current save in localstorage
+// load current save from server to localstorage
 async function loadActiveSave() {
   if (!gameState.saveId) return false;
 
