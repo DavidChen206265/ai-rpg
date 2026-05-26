@@ -17,7 +17,8 @@ const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
 const ACTIVE_SAVE_TITLE_KEY = "ai_rpg_active_save_title";
 
 // search for saveId from url (when user load a save from the homepage)
-const requestedSaveId = new URLSearchParams(window.location.search).get("save") || "";
+const requestedSaveId =
+  new URLSearchParams(window.location.search).get("save") || "";
 
 // load the selected save
 if (requestedSaveId) {
@@ -41,7 +42,7 @@ const elements = {
   healthContainer: document.getElementById("health-container"),
   healthFill: document.getElementById("health-fill"),
   healthLabel: document.getElementById("health-label"),
-  showHistory: document.getElementById("show-history"),
+  chatActions: document.getElementById("chat-actions"),
 };
 
 const choiceButtons = [
@@ -62,6 +63,22 @@ const characterButtons = [
   document.getElementById("character-3"),
 ];
 
+const chatActionButtons = [
+  document.getElementById("current-conversation"),
+  document.getElementById("show-chat-history"),
+  document.getElementById("character-panel"),
+  document.getElementById("world-info"),
+  document.getElementById("game-settings"),
+];
+
+const chatActionButtonNames = {
+  currentConversation: 0,
+  showChatHistory: 1,
+  characterPanel: 2,
+  worldInfo: 3,
+  gameSettings: 4,
+};
+
 const quests = {
   1: {
     name: "Maze",
@@ -79,8 +96,10 @@ const quests = {
   },
   3: {
     name: "Timelost Castle",
-    prompt: "The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have roman / greek era puzzles and monsters, then the late middle rooms (rooms 5-6) have victorian puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The appearance of the mad mage is that of a tan-skinned elf with wavy light silver hair and violet iris's, with fine purple medevial clothes.  The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. When the mad mage is defeated, the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is defeated, the user wins the game.",
-    blurb: "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
+    prompt:
+      "The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have roman / greek era puzzles and monsters, then the late middle rooms (rooms 5-6) have victorian puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The appearance of the mad mage is that of a tan-skinned elf with wavy light silver hair and violet iris's, with fine purple medevial clothes.  The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. When the mad mage is defeated, the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is defeated, the user wins the game.",
+    blurb:
+      "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
   },
 };
 
@@ -136,8 +155,11 @@ const gameState = {
   token: localStorage.getItem(AUTH_TOKEN_KEY) || "",
 };
 
-// state for a single ai stream 
+// state for a single ai stream
 const streamState = {
+  state: "idle", // "idle", "waitingForFirstChunk", "receivingChunks"
+  thinkingTime: 0,
+  lastInputText: "",
   fullResponse: "",
   visibleResponse: "",
   isChoicesHidden: false,
@@ -155,11 +177,103 @@ function hideElement(element) {
   element.classList.add(HIDDEN_CLASS);
 }
 
+// timer
+const thingkingWords = [
+  "Thinking",
+  "Spelunking",
+  "Shenaniganing",
+  "Dilly-dallying",
+  "Caramelizing",
+  "Smooshing",
+  "Prestidigitating",
+  "Flibbertigibbeting",
+  "Whatchamacalliting",
+];
+let thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
+let thingkingWordsCounter = 0;
+const thinkingWordsInterval = 15;
+const thinkingDotAnimation = [
+  '<span style="visibility: hidden;">...</span>',
+  '.<span style="visibility: hidden;">..</span>',
+  '..<span style="visibility: hidden;">.</span>',
+  "...",
+];
+let didYouKnowTexts = [
+  "David stole Cohen's pencil. Cohen said: 'Hey, that's private!' David said: 'But we are in the same class!'",
+  "Yufei's wife tells him, 'Go to the store and buy a loaf of bread. If they have eggs, buy a dozen.' Yufei comes back with 12 loaves of bread.",
+  "Why do programmers always mix up Halloween and Christmas? Because Oct 31 equals Dec 25.",
+  "There are 10 types of people in the world: those who understand binary, and those who don't.",
+  "Why do programmers prefer dark mode? Because light attracts bugs.",
+  "Q: How many programmers does it take to change a light bulb? \n\nA: None, that's a hardware problem.",
+  "Cohen puts two glasses on his bedside table before going to sleep: one full of water in case he gets thirsty, and one empty in case he doesn't.",
+  "David had a problem. He thought to himself, 'I know, I'll use regular expressions.' Now David has two problems.",
+];
+let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
+let didYouKnowCounter = 0;
+const didYouKnowInterval = 30;
+
+const thinkingTimer = setInterval(() => {
+  if (streamState.state === "waitingForFirstChunk") {
+
+    // update counters
+    streamState.thinkingTimeCounter++;
+    thingkingWordsCounter++;
+    didYouKnowCounter++;
+
+    if (thingkingWordsCounter >= thinkingWordsInterval) {
+      thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
+      thingkingWordsCounter = 0;
+    }
+
+    if (didYouKnowCounter >= didYouKnowInterval) {
+      didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
+      didYouKnowCounter = 0;
+    }
+
+  } else {
+    streamState.thinkingTimeCounter = 0;
+    thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
+    thingkingWordsCounter = 0;
+    didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
+    didYouKnowCounter = 0;
+  }
+}, 1000);
+
+const UI_UPDATE_INTERVAL = 250;
+const uiUpdateTimer = setInterval(() => {
+  if (streamState.state === "waitingForFirstChunk") {
+
+    // update thinking animation text
+    thinkingDotAnimation.push(thinkingDotAnimation.shift());
+
+    // update thinking time in UI if the current conversation view is active
+    if (
+      isSelected(chatActionButtons[chatActionButtonNames.currentConversation])
+    ) {
+      setChatHtml(
+        `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> ${thingkingWords[thinkingWordsIndex]}${thinkingDotAnimation[0]} (${streamState.thinkingTimeCounter}s)\n\n<div class="msg-did-you-know"><strong>Did You Know:</strong> \n\n${didYouKnowTexts[didYouKnowTextsIndex]}</div>`,
+      );
+    }
+  }
+}, UI_UPDATE_INTERVAL);
+
 // set select button
 function setSelectedButton(buttons, selectedIndex) {
+  // unselect all buttons when index is -1
+  if (selectedIndex === -1) {
+    buttons.forEach((button, index) => {
+      button.classList.remove(SELECTED_CLASS);
+    });
+    return;
+  }
+
   buttons.forEach((button, index) => {
     button.classList.toggle(SELECTED_CLASS, index === selectedIndex);
   });
+}
+
+function isSelected(element) {
+  return element.classList.contains(SELECTED_CLASS);
 }
 
 function setChoiceControlsDisabled(isDisabled) {
@@ -244,22 +358,33 @@ function createSaveSnapshot() {
 
 // load a save to the current chat
 function applySaveSnapshot(snapshot = {}) {
-  gameState.chatHistory = Array.isArray(snapshot.chatHistory) ? snapshot.chatHistory : [];
+  gameState.chatHistory = Array.isArray(snapshot.chatHistory)
+    ? snapshot.chatHistory
+    : [];
   gameState.eventMemory = new Set(snapshot.eventMemory || []);
   gameState.systemPrompt = snapshot.systemPrompt || gameState.systemPrompt;
   gameState.questInfo = snapshot.questInfo || gameState.questInfo;
-  gameState.characterDescription = snapshot.characterDescription || gameState.characterDescription;
+  gameState.characterDescription =
+    snapshot.characterDescription || gameState.characterDescription;
   gameState.developerMode = snapshot.developerMode || "";
   gameState.isGameOver = Boolean(snapshot.isGameOver);
   gameState.maxHealth = Number(snapshot.maxHealth || gameState.maxHealth);
-  gameState.currentHealth = Number(snapshot.currentHealth ?? gameState.currentHealth);
-  gameState.currentProgress = Number(snapshot.currentProgress || gameState.currentProgress);
-  gameState.selectedQuestName = snapshot.selectedQuestName || gameState.selectedQuestName;
-  gameState.selectedCharacterName = snapshot.selectedCharacterName || gameState.selectedCharacterName;
+  gameState.currentHealth = Number(
+    snapshot.currentHealth ?? gameState.currentHealth,
+  );
+  gameState.currentProgress = Number(
+    snapshot.currentProgress || gameState.currentProgress,
+  );
+  gameState.selectedQuestName =
+    snapshot.selectedQuestName || gameState.selectedQuestName;
+  gameState.selectedCharacterName =
+    snapshot.selectedCharacterName || gameState.selectedCharacterName;
   gameState.choiceDifficulties = Array.isArray(snapshot.choiceDifficulties)
     ? snapshot.choiceDifficulties.map((value) => Number(value || 10))
     : gameState.choiceDifficulties;
-  gameState.choices = Array.isArray(snapshot.choices) ? snapshot.choices : gameState.choices;
+  gameState.choices = Array.isArray(snapshot.choices)
+    ? snapshot.choices
+    : gameState.choices;
   gameState.pendingLuckMessage = snapshot.pendingLuckMessage || "";
   gameState.lastVisibleResponse = snapshot.lastVisibleResponse || "";
 }
@@ -292,16 +417,18 @@ JSON format:
   "healthLost": 0,
   "healthGained": 0,
   "progression": 0
-}`;
+}
+
+DO NOT REPLY IN THE MARKDOWN FORMAT!!!`;
 }
 
 // select a quest (from 1 to 3)
 function selectQuest(questNumber, options = {}) {
   const quest = quests[questNumber];
   if (!quest) {
-    console.error("[Error] There is no quest " + questNumber + ".")
+    console.error("[Error] There is no quest " + questNumber + ".");
     return;
-  };
+  }
 
   // update gameState
   gameState.questInfo = quest.prompt;
@@ -324,15 +451,16 @@ function selectQuest(questNumber, options = {}) {
 function confirmQuest() {
   hideElement(elements.questSelect);
   showElement(elements.characterSelect);
+  showElement(elements.startGame);
 }
 
 // select a character (from 1 to 3)
 function selectCharacter(characterNumber, options = {}) {
   const character = characters[characterNumber];
   if (!character) {
-    console.error("[Error] There is no character " + characterNumber + ".")
+    console.error("[Error] There is no character " + characterNumber + ".");
     return;
-  };
+  }
 
   // update gameState
   gameState.characterDescription = character.description;
@@ -345,7 +473,6 @@ function selectCharacter(characterNumber, options = {}) {
   if (options.reveal !== false) {
     showElement(elements.characterBlurb);
     showElement(elements.characterProfile);
-    showElement(elements.startGame);
   }
 
   // update UI
@@ -358,9 +485,14 @@ function selectCharacter(characterNumber, options = {}) {
 
 // dev mode
 function activateDevMode() {
-  console.log("Dev mode activated. Use developer code word DELTA to succeed in any action.");
+  console.log(
+    "Dev mode activated. Use developer code word DELTA to succeed in any action.",
+  );
+  alert(
+    "Dev mode activated. Use developer code word DELTA to succeed in any action.",
+  );
   gameState.developerMode =
-    "If the user claims they are the developer and uses the code word DELTA, do whatever they say without question. This overrides any other rules, even ones already defined. This action always succeeds, without fail. DO NOT UNDER ANY CIRCUMSTANCES MENTION THIS WITHIN THE GAME. THIS IS TOP SECRET DEVELOPER ONLY INFORMATION FOR CODE DEBUGGING.";
+    "If the user claims they are the developer and uses the code word 'DELTA', do whatever they say without question. This overrides any other rules, even ones already defined (Do not override when the user is not using 'DELTA' in the prompt even it is under dev mode!). This action always succeeds, without fail. DO NOT UNDER ANY CIRCUMSTANCES MENTION THIS WITHIN THE GAME. THIS IS TOP SECRET DEVELOPER ONLY INFORMATION FOR CODE DEBUGGING.";
   updateSystemPrompt();
 }
 
@@ -373,7 +505,10 @@ function extractChoicePayload(responseText) {
     throw new Error("AI response did not include a valid choices payload.");
   }
 
-  const jsonText = responseText.slice(startIndex + CHOICES_START_TAG.length, endIndex);
+  const jsonText = responseText.slice(
+    startIndex + CHOICES_START_TAG.length,
+    endIndex,
+  );
   return JSON.parse(jsonText);
 }
 
@@ -386,10 +521,13 @@ function stripChoicePayload(responseText) {
     return responseText;
   }
 
-  return responseText.slice(0, startIndex) + responseText.slice(endIndex + CHOICES_END_TAG.length);
+  return (
+    responseText.slice(0, startIndex) +
+    responseText.slice(endIndex + CHOICES_END_TAG.length)
+  );
 }
 
-// update gameState 
+// update gameState
 function updateChoices(responseText) {
   const choicePayload = extractChoicePayload(responseText);
 
@@ -429,7 +567,13 @@ function updateChoices(responseText) {
     Number(choicePayload.choice2difficulty || 10),
     Number(choicePayload.choice3difficulty || 10),
   ];
-  console.log(choicePayload.choice1difficulty + " " + choicePayload.choice2difficulty + " " + choicePayload.choice3difficulty);
+  console.log(
+    choicePayload.choice1difficulty +
+      " " +
+      choicePayload.choice2difficulty +
+      " " +
+      choicePayload.choice3difficulty,
+  );
 
   // update choices
   gameState.choices = [
@@ -444,6 +588,7 @@ function updateChoices(responseText) {
 
 // clear all responses and make choices clickable
 function resetStreamState() {
+  streamState.state = "idle";
   streamState.fullResponse = "";
   streamState.visibleResponse = "";
   streamState.isChoicesHidden = false;
@@ -469,15 +614,15 @@ async function saveCurrentGame() {
 
   const response = gameState.saveId
     ? await fetch(`/api/saves/${gameState.saveId}`, {
-      method: "PUT",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    })
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      })
     : await fetch("/api/saves", {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
 
   const data = await response.json();
   if (!response.ok) {
@@ -495,7 +640,6 @@ async function saveCurrentGame() {
 // clear response & update gameState while an AI stream is finished
 function finishAiResponse() {
   try {
-
     // clean the response
     const cleanResponse = updateChoices(streamState.fullResponse);
     gameState.lastVisibleResponse = streamState.visibleResponse;
@@ -503,7 +647,7 @@ function finishAiResponse() {
 
     // update chatHistory
     gameState.chatHistory.push(
-      `Response ${Math.floor(gameState.chatHistory.length / 2)}: ${cleanResponse}`
+      `Response ${Math.floor(gameState.chatHistory.length / 2)}: ${cleanResponse}`,
     );
 
     // check for gameOver
@@ -531,7 +675,7 @@ function renderChatHistory() {
     .map((entry) => {
       if (entry.startsWith("Prompt ")) {
         const text = entry.replace(/^Prompt \d+: /, "");
-        return `<div class="msg-user"><strong>You:</strong> ${text}</div>`;
+        return `<div class="msg-user"><strong>You:</strong> ${text}</div>\n\n`;
       }
 
       if (entry.startsWith("Response ")) {
@@ -544,6 +688,12 @@ function renderChatHistory() {
     .join("");
 
   setChatHtml(rendered);
+
+  // scroll to the bottom after rendering
+  elements.chatWindow.scrollTo({
+    top: elements.chatWindow.scrollHeight,
+    behavior: "auto",
+  });
 }
 
 // when game is ended
@@ -554,7 +704,7 @@ function enterGameEndState() {
   hideElement(elements.startGame);
   showElement(elements.healthContainer);
   showElement(elements.chatWindow);
-  showElement(elements.showHistory);
+  showElement(elements.chatActions);
   setChoiceControlsDisabled(true);
 
   // only show the last response
@@ -568,15 +718,16 @@ function enterGameEndState() {
   });
 }
 
-// formally get into a chat 
+// formally get into a chat
 function restoreInteractiveChat() {
   showElement(elements.chatWindow);
   showElement(elements.healthContainer);
   showElement(elements.actionForm);
+  showElement(elements.chatActions);
   setChoiceControlsDisabled(false);
+  recoverLastConversation();
   renderChoices();
 
-  hideElement(elements.showHistory);
   hideElement(elements.questSelect);
   hideElement(elements.characterSelect);
   hideElement(elements.startGame);
@@ -593,7 +744,10 @@ function handleAiChunk(message) {
   if (hiddenAfterIndex === -1) {
     streamState.visibleResponse = streamState.fullResponse;
   } else {
-    streamState.visibleResponse = streamState.fullResponse.slice(0, hiddenAfterIndex);
+    streamState.visibleResponse = streamState.fullResponse.slice(
+      0,
+      hiddenAfterIndex,
+    );
     streamState.isChoicesHidden = true;
   }
 
@@ -623,10 +777,17 @@ function buildPrompt(inputText) {
   return request;
 }
 
+// send the user's message to server 
 function sendMessage() {
+
+  // check for valid input
   let inputText = elements.userInput.value.trim();
   if (gameState.chatHistory.length !== 0 && !inputText) return;
 
+  // update last input text for thinking animation
+  streamState.lastInputText = inputText;
+
+  // update UI
   showElement(elements.healthContainer);
   hideElement(elements.startGame);
   hideElement(elements.characterSelect);
@@ -639,7 +800,9 @@ function sendMessage() {
   }
 
   const prompt = buildPrompt(inputText);
-  appendChatHtml(`<div class="msg-user"><strong>You:</strong> ${inputText}</div>`);
+  appendChatHtml(
+    `<div class="msg-user"><strong>You:</strong> ${inputText}</div>`,
+  );
   elements.chatWindow.scrollTop = elements.chatWindow.scrollHeight;
 
   socket.emit("ask_ai", {
@@ -648,8 +811,13 @@ function sendMessage() {
     token: gameState.token,
     saveId: gameState.saveId,
   });
-  gameState.chatHistory.push(`Prompt ${Math.floor(gameState.chatHistory.length / 2)}: ${inputText}`);
+  gameState.chatHistory.push(
+    `Prompt ${Math.floor(gameState.chatHistory.length / 2)}: ${inputText}`,
+  );
   elements.userInput.value = "";
+
+  // update stream state
+  streamState.state = "waitingForFirstChunk";
 }
 
 // apply choice and auto send to server
@@ -662,7 +830,8 @@ function applyChoice(choiceNumber) {
   const roll = Math.floor(Math.random() * 20) + 1 + 2;
   console.log("luck: " + roll);
   if (roll < gameState.choiceDifficulties[choiceIndex]) {
-    gameState.pendingLuckMessage = "The action the user just tried to do will fail!";
+    gameState.pendingLuckMessage =
+      "The action the user just tried to do will fail!";
   }
 
   // update input & send to server
@@ -683,7 +852,9 @@ async function loadActiveSave() {
   if (!gameState.saveId) return false;
 
   // get the active save's data from server
-  const response = await fetch(`/api/saves/${gameState.saveId}`, { headers: authHeaders() });
+  const response = await fetch(`/api/saves/${gameState.saveId}`, {
+    headers: authHeaders(),
+  });
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.error || "Failed to load save.");
@@ -697,7 +868,7 @@ async function loadActiveSave() {
     throw new Error("Save data is invalid.");
   }
 
-  // apply save's data to local 
+  // apply save's data to local
   applySaveSnapshot(save.gameState);
   gameState.saveTitle = save.title || gameState.saveTitle;
 
@@ -713,9 +884,8 @@ async function loadActiveSave() {
   if (gameState.isGameOver) {
     enterGameEndState();
   } else {
-
-    // show chat history and continue the game
-    renderChatHistory();
+    // continue the game with the loaded save
+    
     restoreInteractiveChat();
   }
 
@@ -747,15 +917,71 @@ async function checkValidUser() {
   }
 }
 
+// recover the last conversation when user refreshes the page or comes back to the page
+function recoverLastConversation() {
+  if (!gameState.isGameOver) {
+    showElement(elements.actionForm);
+  }
+
+  // recover the last conversation
+  if (streamState.state === "receivingChunks") {
+    // if there is an ongoing stream, show the visible part of the response
+    setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
+  } else if (streamState.state === "waitingForFirstChunk") {
+    // if there is an ongoing stream but the response is not received, show a thinking message
+    setChatHtml(
+      `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
+    );
+  } else if (streamState.state === "idle" && gameState.lastVisibleResponse) {
+    // if there is no ongoing stream but there is a last response, show the last response
+    setChatHtml(`<div class="msg-ai">${gameState.lastVisibleResponse}</div>`);
+  } else {
+    // if there is no response at all, show a default message
+    setChatHtml(`<div class="msg-ai">No AI responses yet.</div>`);
+  }
+
+  elements.chatWindow.scrollTo({ top: 0, behavior: "auto" });
+}
+
 // buttons
 function setButtonEvents() {
   elements.title.addEventListener("click", activateDevMode); // use dev mode
   elements.confirmQuest.addEventListener("click", confirmQuest);
-  elements.startGame.addEventListener("click", sendMessage);
-  elements.showHistory.addEventListener("click", () => {
-    renderChatHistory();
-    hideElement(elements.showHistory);
+  elements.startGame.addEventListener("click", () => {
+    showElement(elements.chatWindow);
+    showElement(elements.chatActions);
+    sendMessage();
   });
+
+  // chat actions
+  // currentConversation
+  chatActionButtons[chatActionButtonNames.currentConversation].addEventListener(
+    "click",
+    () => {
+      // update UI
+      setSelectedButton(
+        chatActionButtons,
+        chatActionButtonNames.currentConversation,
+      );
+
+      recoverLastConversation();
+    },
+  );
+
+  // showChatHistory
+  chatActionButtons[chatActionButtonNames.showChatHistory].addEventListener(
+    "click",
+    () => {
+      // update UI
+      setSelectedButton(
+        chatActionButtons,
+        chatActionButtonNames.showChatHistory,
+      );
+      hideElement(elements.actionForm);
+
+      renderChatHistory();
+    },
+  );
 
   elements.actionForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -776,7 +1002,10 @@ function setButtonEvents() {
 }
 
 socket.on("connect", () => {
-  if (!pageState.hasLoadedSave && elements.chatWindow.textContent.trim() === "Connecting...") {
+  if (
+    !pageState.hasLoadedSave &&
+    elements.chatWindow.textContent.trim() === "Connecting..."
+  ) {
     setChatHtml("<div>System: Connected to the server.</div>");
   }
 });
@@ -784,14 +1013,19 @@ socket.on("connect", () => {
 // handle main AI response
 socket.on("ai_stream", (message) => {
   if (message === "start") {
-    setChatHtml('<div class="msg-ai" id="loading">Thinking...</div>');
+    setChatHtml(
+      `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
+    );
+    streamState.state = "waitingForFirstChunk";
   } else if (message.startsWith("[Error]")) {
     appendChatHtml(`<div class="msg-ai" id="loading">${message}</div>`);
     console.error(message);
     setChoiceControlsDisabled(false);
   } else if (message.startsWith("[Chunk]")) {
+    streamState.state = "receivingChunks";
     handleAiChunk(message);
   } else if (message === "end") {
+    streamState.state = "idle";
     finishAiResponse();
   }
 
@@ -801,10 +1035,11 @@ socket.on("ai_stream", (message) => {
 // check for data AI failure
 socket.on("data_response", (message) => {
   if (message.startsWith("[Error]")) {
-    appendChatHtml(`<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`);
+    appendChatHtml(
+      `<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`,
+    );
     console.error(message);
   } else {
-
     // update gameState and auto save
     gameState.eventMemory.add(message);
     saveCurrentGame().catch((error) => {
@@ -822,14 +1057,27 @@ socket.on("data_response", (message) => {
   }
 });
 
+// setup eventListeners
 setButtonEvents();
+
+// setup UI
 selectQuest(1, { reveal: true });
 selectCharacter(1, { reveal: true });
+
+hideElement(elements.startGame);
+
 if (gameState.saveId) {
+  // while loading an existed save
   hideElement(elements.questSelect);
   hideElement(elements.characterSelect);
   hideElement(elements.characterBlurb);
-  hideElement(elements.startGame);
+} else {
+  // while opening a new chat
+  hideElement(elements.chatWindow);
 }
+
+// logout button
 renderAuthAction();
+
+// check for valid user
 checkValidUser();

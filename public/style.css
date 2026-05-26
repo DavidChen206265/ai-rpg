@@ -7,7 +7,7 @@
   --muted: #617089;
   --line: #d8deea;
   --primary: #2166d1;
-  --primary-dark: #174a9a;
+  --primary-dark: #143f85;
   --health: #d93131;
   --danger: #b42318;
   --shadow: 0 18px 45px rgba(31, 45, 69, 0.12);
@@ -73,7 +73,8 @@ button:disabled {
 .page-header,
 .game-header,
 .panel-head,
-.page-actions,
+#page-actions,
+#chat-actions,
 .save-list-inline,
 .auth-tabs {
   display: flex;
@@ -94,7 +95,8 @@ button:disabled {
   margin: 0;
 }
 
-.page-actions {
+#page-actions,
+#chat-actions {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -219,12 +221,30 @@ button:disabled {
   gap: 10px;
 }
 
+#chat-actions {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
 .option-button {
-  background: #365778;
+  background: var(--primary);
 }
 
 .option-button.is-selected {
-  background: var(--primary);
+  background: var(--primary-dark);
+}
+
+/* chat action buttons (bottom row) */
+.chat-action {
+  background: #555;
+  color: #fff;
+}
+
+.chat-action.is-selected {
+  background: var(--primary-dark);
 }
 
 .selection-copy {
@@ -322,7 +342,7 @@ button:disabled {
 .choice-button {
   grid-column: 1 / -1;
   text-align: left;
-  background: #365778;
+  background: var(--primary);
 }
 
 #user-input {
@@ -351,6 +371,12 @@ button:disabled {
   border-bottom: 1px dashed var(--line);
 }
 
+.msg-did-you-know {
+  margin-top: 10px;
+  font-style: italic;
+  color: var(--muted);
+}
+
 .is-hidden {
   display: none !important;
 }
@@ -365,7 +391,8 @@ button:disabled {
     display: block;
   }
 
-  .page-actions {
+  #page-actions,
+  #chat-actions {
     justify-content: flex-start;
     margin-top: 12px;
   }
@@ -378,8 +405,9 @@ button:disabled {
     display: grid;
   }
 
-  .page-actions,
-  .auth-tabs {
+  .auth-tabs,
+  #page-actions,
+  #chat-actions {
     flex-wrap: wrap;
   }
 
