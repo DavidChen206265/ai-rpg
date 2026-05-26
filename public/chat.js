@@ -144,6 +144,60 @@ const gameState = {
   maxHealth: characters[2].maxHealth,
   currentHealth: characters[2].maxHealth,
   currentProgress: 1,
+  playerStatus: {
+    health: {
+      current: 8,
+      max: 10,
+    },
+    mana: {
+      current: 12,
+      max: 15,
+    },
+    strength: 5,
+    agility: 5,
+    intelligence: 5,
+    vitality: 5,
+    spirit: 5,
+    modifiers: {
+      slow: {
+        duration: "5 hours",
+        modify: "agility - 3"
+      },
+    }
+  },
+  relationships: {
+    0: {
+      name: "character's name (not player's)",
+      description: "character's description",
+      relationship: "relationship's description",
+    },
+  },
+  skills: {
+    0: {
+      name: "skill's name",
+      description: "skill's description",
+      modifier: {
+        trigger: "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        modify: "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow",
+      },
+    },
+  },
+  inventory: {
+    0: {
+      name: "",
+      number: 1,
+      description: "item's background and usages' short description",
+      modify: "",
+    },
+  },
+  achievements: {
+    0: {
+      name: "",
+      isAchieved: false,
+      trigger: "",
+      reward: "",
+    },
+  },
   selectedQuestName: quests[1].name,
   selectedCharacterName: characters[2].name,
   choiceDifficulties: [10, 10, 10],
@@ -177,8 +231,8 @@ function hideElement(element) {
   element.classList.add(HIDDEN_CLASS);
 }
 
-// timer
-const thingkingWords = [
+// thinking UI helpers
+const thinkingWords = [
   "Thinking",
   "Spelunking",
   "Shenaniganing",
@@ -189,8 +243,8 @@ const thingkingWords = [
   "Flibbertigibbeting",
   "Whatchamacalliting",
 ];
-let thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
-let thingkingWordsCounter = 0;
+let thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
+let thinkingWordsCounter = 0;
 const thinkingWordsInterval = 15;
 const thinkingDotAnimation = [
   '<span style="visibility: hidden;">...</span>',
@@ -198,6 +252,7 @@ const thinkingDotAnimation = [
   '..<span style="visibility: hidden;">.</span>',
   "...",
 ];
+
 let didYouKnowTexts = [
   "David stole Cohen's pencil. Cohen said: 'Hey, that's private!' David said: 'But we are in the same class!'",
   "Yufei's wife tells him, 'Go to the store and buy a loaf of bread. If they have eggs, buy a dozen.' Yufei comes back with 12 loaves of bread.",
@@ -217,12 +272,12 @@ const thinkingTimer = setInterval(() => {
 
     // update counters
     streamState.thinkingTimeCounter++;
-    thingkingWordsCounter++;
+    thinkingWordsCounter++;
     didYouKnowCounter++;
 
-    if (thingkingWordsCounter >= thinkingWordsInterval) {
-      thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
-      thingkingWordsCounter = 0;
+    if (thinkingWordsCounter >= thinkingWordsInterval) {
+      thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
+      thinkingWordsCounter = 0;
     }
 
     if (didYouKnowCounter >= didYouKnowInterval) {
@@ -232,8 +287,8 @@ const thinkingTimer = setInterval(() => {
 
   } else {
     streamState.thinkingTimeCounter = 0;
-    thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
-    thingkingWordsCounter = 0;
+    thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
+    thinkingWordsCounter = 0;
     didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
     didYouKnowCounter = 0;
   }
@@ -251,7 +306,7 @@ const uiUpdateTimer = setInterval(() => {
       isSelected(chatActionButtons[chatActionButtonNames.currentConversation])
     ) {
       setChatHtml(
-        `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> ${thingkingWords[thinkingWordsIndex]}${thinkingDotAnimation[0]} (${streamState.thinkingTimeCounter}s)\n\n<div class="msg-did-you-know"><strong>Did You Know:</strong> \n\n${didYouKnowTexts[didYouKnowTextsIndex]}</div>`,
+        `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> ${thinkingWords[thinkingWordsIndex]}${thinkingDotAnimation[0]} (${streamState.thinkingTimeCounter}s)\n\n<div class="msg-did-you-know"><strong>Did You Know:</strong> \n\n${didYouKnowTexts[didYouKnowTextsIndex]}</div>`,
       );
     }
   }
@@ -346,6 +401,11 @@ function createSaveSnapshot() {
     isGameOver: gameState.isGameOver,
     maxHealth: gameState.maxHealth,
     currentHealth: gameState.currentHealth,
+    playerStatus: gameState.playerStatus,
+    relationships: gameState.relationships,
+    skills: gameState.skills,
+    inventory: gameState.inventory,
+    achievements: gameState.achievements,
     currentProgress: gameState.currentProgress,
     selectedQuestName: gameState.selectedQuestName,
     selectedCharacterName: gameState.selectedCharacterName,
@@ -372,9 +432,14 @@ function applySaveSnapshot(snapshot = {}) {
   gameState.currentHealth = Number(
     snapshot.currentHealth ?? gameState.currentHealth,
   );
-  gameState.currentProgress = Number(
-    snapshot.currentProgress || gameState.currentProgress,
-  );
+  gameState.playerStatus = snapshot.playerStatus,
+    gameState.relationships = snapshot.relationships,
+    gameState.skills = snapshot.skills,
+    gameState.inventory = snapshot.inventory,
+    gameState.achievements = snapshot.achievements,
+    gameState.currentProgress = Number(
+      snapshot.currentProgress || gameState.currentProgress,
+    );
   gameState.selectedQuestName =
     snapshot.selectedQuestName || gameState.selectedQuestName;
   gameState.selectedCharacterName =
@@ -401,9 +466,21 @@ You are a game master, running a fantasy game. The user's character is ${gameSta
 
 ${gameState.developerMode}
 
-If there is a puzzle or riddle presented to the user, make at least one of the three choices an incorrect answer (but don't make it too obvious) and give it a difficulty of 20, as to make it almost impossible for the user to succeed. There should also be a correct answer, with a difficulty reflecting how hard it would be to actually pull off the solution. (don't make it too difficult however) Avoid having a choice just be "solve the puzzle", the user actually has to deduce which answer solves the puzzle.
+If there is a puzzle or riddle presented to the user, make at least one of the three choices an incorrect answer (but don't make it too obvious) and give it a difficulty of 20, as to make it almost impossible for the user to succeed. There should also be a correct answer, with a difficulty reflecting how hard it would be to actually pull off the solution. (don't make it too difficult however) Avoid having a choice just be "solve the puzzle", the user actually has to deduce which answer solves the puzzle. 
 
-Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + "${CHOICES_START_TAG}" + valid JSON of three choices and their difficulties and whether the game is over as a boolean + "${CHOICES_END_TAG}"
+The choice / custom input's difficulty must be calculated by relative player status and all applicable modifiers!
+
+Changed status: whenever you modify playerStatus, relationships, skills, inventory, or when the player achieves an achievement, show a brief log each of the changes to remind the player.
+e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [achievementName]} {debuff: [slow]}
+
+JSON update instructions:
+1. turn gameOver to true if playerStatus.health.current <= 0, but set it to 0 since health can not be less than 0; current health must <= max health.
+2. in playerStatus(except playerStatus.modifiers) and achievements, you can only edit the value of fields, must not add / delete fields;
+3. in relationships, you can only add new relationships / edit exiting ones but must not delete any of them;
+4. in playerStatus.modifiers, skills, inventory, you can add / edit / delete fields;
+5. you must maintain the format for each field;
+
+Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
 JSON format:
 {
@@ -417,6 +494,60 @@ JSON format:
   "healthLost": 0,
   "healthGained": 0,
   "progression": 0
+  "playerStatus": {
+    "health": {
+      "current": 8,
+      "max": 10,
+    },
+    "mana": {
+      "current": 12,
+      "max": 15,
+    },
+    "strength": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "vitality": 5,
+    "spirit": 5,
+    "modifiers": {
+      "slow": {
+        "duration": "5 hours",
+        "modify": "agility - 3"
+      },
+    }
+  },
+  "relationships": {
+    "characterBriefName0": {
+      "name": "character's full name (not player's)",
+      "description": "character's description",
+      "relationship": "relationship's description",
+    }, 
+  },
+  "skills": {
+    "skillBriefName0": {
+      "name": "skill's full name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow",
+      },
+    }, 
+  },
+  "inventory": {
+    "itemBriefName0": {
+      "name": "item's full name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "",
+    },
+  },
+  "achievements": {
+    "achievementBriefName": {
+      "name": "",
+      "isAchieved": false,
+      "trigger": "",
+      "reward": "",
+    },
+  },
 }
 
 DO NOT REPLY IN THE MARKDOWN FORMAT!!!`;
@@ -531,27 +662,21 @@ function stripChoicePayload(responseText) {
 function updateChoices(responseText) {
   const choicePayload = extractChoicePayload(responseText);
 
+  // update gameStatus
+  gameState.playerStatus = choicePayload.playerStatus;
+  gameState.relationships = choicePayload.relationships;
+  gameState.skills = choicePayload.skills;
+  gameState.inventory = choicePayload.inventory;
+  gameState.achievements = choicePayload.achievements;
+
   // check for game over
   if (choicePayload.gameOver === true || choicePayload.gameOver === "true") {
     gameState.isGameOver = true;
   }
 
   // update health
-  gameState.currentHealth =
-    gameState.currentHealth -
-    Number(choicePayload.healthLost || 0) +
-    Number(choicePayload.healthGained || 0);
-
-  if (gameState.currentHealth > gameState.maxHealth) {
-    gameState.currentHealth = gameState.maxHealth;
-  }
-
+  gameState.playerStatus.health.current = choicePayload.playerStatus.health.current;
   renderHealth();
-
-  if (gameState.currentHealth <= 0) {
-    gameState.isGameOver = true;
-    elements.healthLabel.textContent = "You Died!";
-  }
 
   // update currentProgress
   if (choicePayload.progression === 1 || choicePayload.progression === "1") {
@@ -569,10 +694,10 @@ function updateChoices(responseText) {
   ];
   console.log(
     choicePayload.choice1difficulty +
-      " " +
-      choicePayload.choice2difficulty +
-      " " +
-      choicePayload.choice3difficulty,
+    " " +
+    choicePayload.choice2difficulty +
+    " " +
+    choicePayload.choice3difficulty,
   );
 
   // update choices
@@ -614,15 +739,15 @@ async function saveCurrentGame() {
 
   const response = gameState.saveId
     ? await fetch(`/api/saves/${gameState.saveId}`, {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      })
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    })
     : await fetch("/api/saves", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      });
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    });
 
   const data = await response.json();
   if (!response.ok) {
@@ -761,6 +886,13 @@ function buildPrompt(inputText) {
   request += gameState.pendingLuckMessage;
   gameState.pendingLuckMessage = "";
 
+  request += `\n\nCurrent game state: \n\n`;
+  request += `1. player status: \n${JSON.stringify(gameState.playerStatus, null, 2)} \n\n`;
+  request += `2. player relationships: \n${JSON.stringify(gameState.relationships, null, 2)} \n\n`;
+  request += `3. player skills: \n${JSON.stringify(gameState.skills, null, 2)} \n\n`;
+  request += `4. player inventory: \n${JSON.stringify(gameState.inventory, null, 2)} \n\n`;
+  request += `5. player achievements: \n${JSON.stringify(gameState.achievements, null, 2)} \n\n`;
+
   request += `\n\nCurrent conversation: ${inputText}\n\n`;
 
   request += "\n\nImportant Memories: \n\n";
@@ -773,6 +905,9 @@ function buildPrompt(inputText) {
     gameState.chatHistory[gameState.chatHistory.length - 2] +
     " " +
     gameState.chatHistory[gameState.chatHistory.length - 1];
+
+  // test
+  console.log("Request: \n\n" + request);
 
   return request;
 }
@@ -885,7 +1020,7 @@ async function loadActiveSave() {
     enterGameEndState();
   } else {
     // continue the game with the loaded save
-    
+
     restoreInteractiveChat();
   }
 
@@ -982,6 +1117,27 @@ function setButtonEvents() {
       renderChatHistory();
     },
   );
+
+  // characterPanel
+  chatActionButtons[chatActionButtonNames.characterPanel].addEventListener("click", () => {
+
+    // update UI
+    setSelectedButton(
+      chatActionButtons,
+      chatActionButtonNames.characterPanel,
+    );
+    hideElement(elements.actionForm);
+
+    let playerPanelHtml = "";
+    playerPanelHtml += `\n\nCurrent game state: \n\n`;
+    playerPanelHtml += `Status: \n${JSON.stringify(gameState.playerStatus, null, 2)} \n\n`;
+    playerPanelHtml += `Relationships: \n${JSON.stringify(gameState.relationships, null, 2)} \n\n`;
+    playerPanelHtml += `Skills: \n${JSON.stringify(gameState.skills, null, 2)} \n\n`;
+    playerPanelHtml += `Inventory: \n${JSON.stringify(gameState.inventory, null, 2)} \n\n`;
+    playerPanelHtml += `Achievements: \n${JSON.stringify(gameState.achievements, null, 2)} \n\n`;
+
+    setChatHtml(playerPanelHtml);
+  })
 
   elements.actionForm.addEventListener("submit", (event) => {
     event.preventDefault();
