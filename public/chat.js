@@ -156,8 +156,7 @@ const gameState = {
     strength: 5,
     agility: 5,
     intelligence: 5,
-    vitality: 5,
-    spirit: 5,
+    magic: 5,
     modifiers: {
       slow: {
         duration: "5 hours",
@@ -201,6 +200,7 @@ const gameState = {
   selectedQuestName: quests[1].name,
   selectedCharacterName: characters[2].name,
   choiceDifficulties: [10, 10, 10],
+  choiceTypes: ["strength", "strength", "strength"],
   pendingLuckMessage: "",
   choices: ["Choice one", "Choice two", "Choice three"],
   lastVisibleResponse: "",
@@ -410,6 +410,7 @@ function createSaveSnapshot() {
     selectedQuestName: gameState.selectedQuestName,
     selectedCharacterName: gameState.selectedCharacterName,
     choiceDifficulties: gameState.choiceDifficulties,
+    choiceTypes: gameState.choiceTypes,
     choices: gameState.choices,
     pendingLuckMessage: gameState.pendingLuckMessage,
     lastVisibleResponse: gameState.lastVisibleResponse,
@@ -479,6 +480,8 @@ JSON update instructions:
 3. in relationships, you can only add new relationships / edit exiting ones but must not delete any of them;
 4. in playerStatus.modifiers, skills, inventory, you can add / edit / delete fields;
 5. you must maintain the format for each field;
+6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
+7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless the user uses some type of enhancement magic or specialized training, these values should not change between prompts.
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
@@ -486,10 +489,13 @@ JSON format:
 {
   "choice1": "Choice 1 text.",
   "choice1difficulty": 10,
+  "choice1type": "strength",
   "choice2": "Choice 2 text.",
   "choice2difficulty": 10,
+  "choice2type": "strength",
   "choice3": "Choice 3 text.",
   "choice3difficulty": 10,
+  "choice3type": "strength",
   "gameOver": false,
   "healthLost": 0,
   "healthGained": 0,
@@ -503,11 +509,10 @@ JSON format:
       "current": 12,
       "max": 15,
     },
-    "strength": 5,
-    "agility": 5,
-    "intelligence": 5,
-    "vitality": 5,
-    "spirit": 5,
+    "strength": 0,
+    "agility": 0,
+    "intelligence": 0,
+    "magic": 0,
     "modifiers": {
       "slow": {
         "duration": "5 hours",
@@ -668,6 +673,9 @@ function updateChoices(responseText) {
   gameState.skills = choicePayload.skills;
   gameState.inventory = choicePayload.inventory;
   gameState.achievements = choicePayload.achievements;
+  gameState.choiceTypes[0] = choicePayload.choice1type;
+  gameState.choiceTypes[1] = choicePayload.choice2type;
+  gameState.choiceTypes[2] = choicePayload.choice3type;
 
   // check for game over
   if (choicePayload.gameOver === true || choicePayload.gameOver === "true") {
@@ -962,8 +970,21 @@ function applyChoice(choiceNumber) {
   if (!selectedButton || !selectedButton.textContent) return;
 
   // generate luck
-  const roll = Math.floor(Math.random() * 20) + 1 + 2;
-  console.log("luck: " + roll);
+  const roll = Math.floor(Math.random() * 20) + 1;
+  let CurrentChoiceType = choiceTypes[choiceIndex];
+  if(CurrentChoiceType == "strength"){
+    roll = roll + gameState.playerStatus.strength;
+  }
+  if(CurrentChoiceType == "agility"){
+    roll = roll + gameState.playerStatus.agility;
+  }
+  if(CurrentChoiceType == "intelligence"){
+    roll = roll + gameState.playerStatus.intelligence;
+  }
+  if(CurrentChoiceType == "magic"){
+    roll = roll + gameState.playerStatus.magic;
+  }
+  console.log("luck: " + roll + " type: " + CurrentChoiceType);
   if (roll < gameState.choiceDifficulties[choiceIndex]) {
     gameState.pendingLuckMessage =
       "The action the user just tried to do will fail!";
