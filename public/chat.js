@@ -971,7 +971,7 @@ function applyChoice(choiceNumber) {
 
   // generate luck
   const roll = Math.floor(Math.random() * 20) + 1;
-  let CurrentChoiceType = choiceTypes[choiceIndex];
+  let CurrentChoiceType = gameState.choiceTypes[choiceIndex];
   if(CurrentChoiceType == "strength"){
     roll = roll + gameState.playerStatus.strength;
   }
