@@ -18,6 +18,23 @@ function authHeaders() {
   };
 }
 
+const REST_TIMEOUT_MS = 30_000;
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = REST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error(`Request timed out after ${timeoutMs / 1000}s.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // clear all local data while logout
 function clearSession() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -43,6 +60,15 @@ function formatDate(value) {
   return new Date(value).toLocaleString();
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function safeJsonParse(text) {
   try {
     return JSON.parse(text);
@@ -56,7 +82,7 @@ async function renameSave(saveId, currentTitle) {
   const title = prompt("Rename save", currentTitle);
   if (!title || title.trim() === currentTitle) return;
 
-  const response = await fetch(`/api/saves/${saveId}`, {
+  const response = await fetchWithTimeout(`/api/saves/${saveId}`, {
     method: "PUT",
     headers: authHeaders(),
     body: JSON.stringify({ title: title.trim() }),
@@ -69,7 +95,7 @@ async function renameSave(saveId, currentTitle) {
 async function deleteSave(saveId) {
   if (!confirm("Delete this save?")) return;
 
-  const response = await fetch(`/api/saves/${saveId}`, {
+  const response = await fetchWithTimeout(`/api/saves/${saveId}`, {
     method: "DELETE",
     headers: authHeaders(),
   });
@@ -94,7 +120,7 @@ async function loadSaves() {
   }
 
   // get all saves for the current user
-  const response = await fetch("/api/saves", { headers: authHeaders() });
+  const response = await fetchWithTimeout("/api/saves", { headers: authHeaders() });
   const data = safeJsonParse(await response.text());
   if (!response.ok) {
     throw new Error(data.error || "Failed to load saves.");
@@ -111,13 +137,13 @@ async function loadSaves() {
     .map(
       (save) => `
         <div class="save-card">
-          <button class="save-main" type="button" data-open-save="${save._id}" data-save-title="${save.title}">
-            <strong>${save.title}</strong>
-            <span>Last conversation: ${formatDate(save.updatedAt || save.createdAt)}</span>
+          <button class="save-main" type="button" data-open-save="${escapeHtml(save._id)}" data-save-title="${escapeHtml(save.title)}">
+            <strong>${escapeHtml(save.title)}</strong>
+            <span>Last conversation: ${escapeHtml(formatDate(save.updatedAt || save.createdAt))}</span>
           </button>
           <div class="save-actions">
-            <button type="button" data-rename-save="${save._id}" data-save-title="${save.title}">Rename</button>
-            <button type="button" data-delete-save="${save._id}">Delete</button>
+            <button type="button" data-rename-save="${escapeHtml(save._id)}" data-save-title="${escapeHtml(save.title)}">Rename</button>
+            <button type="button" data-delete-save="${escapeHtml(save._id)}">Delete</button>
           </div>
         </div>
       `
@@ -141,7 +167,7 @@ async function loadSaves() {
   elements.saveList.querySelectorAll("[data-rename-save]").forEach((button) => {
     button.addEventListener("click", () => {
       renameSave(button.dataset.renameSave, button.dataset.saveTitle).catch((error) => {
-        elements.saveList.innerHTML = `<p class="empty-state">${error.message}</p>`;
+        elements.saveList.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
       });
     });
   });
@@ -149,7 +175,7 @@ async function loadSaves() {
   elements.saveList.querySelectorAll("[data-delete-save]").forEach((button) => {
     button.addEventListener("click", () => {
       deleteSave(button.dataset.deleteSave).catch((error) => {
-        elements.saveList.innerHTML = `<p class="empty-state">${error.message}</p>`;
+        elements.saveList.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
       });
     });
   });
@@ -158,7 +184,7 @@ async function loadSaves() {
 // refresh saves list
 elements.refresh.addEventListener("click", () => {
   loadSaves().catch((error) => {
-    elements.saveList.innerHTML = `<p class="empty-state">${error.message}</p>`;
+    elements.saveList.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
   });
 });
 
@@ -171,7 +197,7 @@ elements.newChat.addEventListener("click", () => {
 });
 
 loadSaves().catch((error) => {
-  elements.saveList.innerHTML = `<p class="empty-state">${error.message}</p>`;
+  elements.saveList.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
 });
 
 renderAuthAction();
