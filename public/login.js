@@ -13,23 +13,6 @@ const elements = {
 
 let mode = "login"; // "login" "register"
 
-const REST_TIMEOUT_MS = 30_000;
-
-async function fetchWithTimeout(url, options = {}, timeoutMs = REST_TIMEOUT_MS) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } catch (error) {
-    if (error?.name === "AbortError") {
-      throw new Error(`Request timed out after ${timeoutMs / 1000}s.`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 // set mode as login or register
 function setMode(nextMode) {
   mode = nextMode;
@@ -52,7 +35,7 @@ async function submitAuth(event) {
 
   try {
     // send username & password to server
-    const response = await fetchWithTimeout(`/api/auth/${mode}`, {
+    const response = await fetch(`/api/auth/${mode}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),

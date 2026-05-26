@@ -157,15 +157,12 @@ const gameState = {
 
 // state for a single ai stream
 const streamState = {
-  state: "idle", // "idle", "waitingForFirstChunk", "receivingChunks", "error"
-  thinkingTimeCounter: 0,
-  secondsSinceLastChunk: 0,
+  state: "idle", // "idle", "waitingForFirstChunk", "receivingChunks"
+  thinkingTime: 0,
   lastInputText: "",
   fullResponse: "",
   visibleResponse: "",
   isChoicesHidden: false,
-  errorMessage: "",
-  hasPendingPrompt: false,
 };
 
 const pageState = {
@@ -215,15 +212,11 @@ let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
 let didYouKnowCounter = 0;
 const didYouKnowInterval = 30;
 
-// timeout after no response or stalled response from server during AI stream, in seconds
-const STREAM_INACTIVITY_TIMEOUT_S = 200;
-
-const thinkingTimer = setInterval(async () => {
+const thinkingTimer = setInterval(() => {
   if (streamState.state === "waitingForFirstChunk") {
 
     // update counters
     streamState.thinkingTimeCounter++;
-    streamState.secondsSinceLastChunk++;
     thingkingWordsCounter++;
     didYouKnowCounter++;
 
@@ -237,46 +230,8 @@ const thinkingTimer = setInterval(async () => {
       didYouKnowCounter = 0;
     }
 
-    // check for timeout: no response at all from server
-    if (streamState.secondsSinceLastChunk >= STREAM_INACTIVITY_TIMEOUT_S) {
-      streamState.errorMessage = `No response from server for ${STREAM_INACTIVITY_TIMEOUT_S}s. The request may have timed out.`;
-      streamState.state = "error";
-    }
-
-  } else if (streamState.state === "receivingChunks") {
-
-    streamState.secondsSinceLastChunk++;
-
-    // check for timeout: response started but stalled with no new content
-    if (streamState.secondsSinceLastChunk >= STREAM_INACTIVITY_TIMEOUT_S) {
-      streamState.errorMessage = `Stream stalled for ${STREAM_INACTIVITY_TIMEOUT_S}s with no new content.`;
-      streamState.state = "error";
-    }
-
-  } else if (streamState.state === "error") {
-
-    // prevent multiple alerts if the timer keeps ticking before recovery finishes
-    streamState.state = "recovering";
-    rollbackPendingPrompt();
-    const reason = streamState.errorMessage || "An error occurred during the AI response stream.";
-
-    alert(`${reason} Program will try to recover the last save.`);
-    try {
-      const loadedSave = await loadActiveSave();
-      if (!loadedSave) {
-        showElement(elements.questSelect);
-      }
-    } catch (error) {
-      appendChatHtml(`<div class="msg-ai">[Error]: ${escapeHtml(error.message)}</div>`);
-      alert("Failed to load the last save. Please select a quest to start a new game.");
-      console.error(error.message);
-    }
-    resetStreamState();
-    setChoiceControlsDisabled(false);
-
   } else {
     streamState.thinkingTimeCounter = 0;
-    streamState.secondsSinceLastChunk = 0;
     thinkingWordsIndex = Math.floor(Math.random() * thingkingWords.length);
     thingkingWordsCounter = 0;
     didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
@@ -296,7 +251,7 @@ const uiUpdateTimer = setInterval(() => {
       isSelected(chatActionButtons[chatActionButtonNames.currentConversation])
     ) {
       setChatHtml(
-        `<div class="msg-user"><strong>You:</strong> ${escapeHtml(streamState.lastInputText)}</div>\n\n<div class="msg-ai"><strong>AI:</strong> ${thingkingWords[thinkingWordsIndex]}${thinkingDotAnimation[0]} (${streamState.thinkingTimeCounter}s)\n\n<div class="msg-did-you-know"><strong>Did You Know:</strong> \n\n${didYouKnowTexts[didYouKnowTextsIndex]}</div>`,
+        `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> ${thingkingWords[thinkingWordsIndex]}${thinkingDotAnimation[0]} (${streamState.thinkingTimeCounter}s)\n\n<div class="msg-did-you-know"><strong>Did You Know:</strong> \n\n${didYouKnowTexts[didYouKnowTextsIndex]}</div>`,
       );
     }
   }
@@ -341,16 +296,6 @@ function setChatHtml(html) {
 
 function appendChatHtml(html) {
   elements.chatWindow.innerHTML += html;
-}
-
-// escape untrusted text 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 // logout button
@@ -624,10 +569,10 @@ function updateChoices(responseText) {
   ];
   console.log(
     choicePayload.choice1difficulty +
-    " " +
-    choicePayload.choice2difficulty +
-    " " +
-    choicePayload.choice3difficulty,
+      " " +
+      choicePayload.choice2difficulty +
+      " " +
+      choicePayload.choice3difficulty,
   );
 
   // update choices
@@ -647,20 +592,6 @@ function resetStreamState() {
   streamState.fullResponse = "";
   streamState.visibleResponse = "";
   streamState.isChoicesHidden = false;
-  streamState.thinkingTimeCounter = 0;
-  streamState.secondsSinceLastChunk = 0;
-  streamState.errorMessage = "";
-  streamState.hasPendingPrompt = false;
-}
-
-// drop the last entry if it's an unpaired Prompt.
-function rollbackPendingPrompt() {
-  if (!streamState.hasPendingPrompt) return;
-  const last = gameState.chatHistory[gameState.chatHistory.length - 1];
-  if (typeof last === "string" && last.startsWith("Prompt ")) {
-    gameState.chatHistory.pop();
-  }
-  streamState.hasPendingPrompt = false;
 }
 
 // save the current game to server
@@ -682,16 +613,16 @@ async function saveCurrentGame() {
   };
 
   const response = gameState.saveId
-    ? await fetchWithTimeout(`/api/saves/${gameState.saveId}`, {
-      method: "PUT",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    })
-    : await fetchWithTimeout("/api/saves", {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify(payload),
-    });
+    ? await fetch(`/api/saves/${gameState.saveId}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      })
+    : await fetch("/api/saves", {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
 
   const data = await response.json();
   if (!response.ok) {
@@ -712,43 +643,26 @@ function finishAiResponse() {
     // clean the response
     const cleanResponse = updateChoices(streamState.fullResponse);
     gameState.lastVisibleResponse = streamState.visibleResponse;
-    setChatHtml(`<div class="msg-ai">${escapeHtml(streamState.visibleResponse)}</div>`);
+    setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
 
     // update chatHistory
     gameState.chatHistory.push(
       `Response ${Math.floor(gameState.chatHistory.length / 2)}: ${cleanResponse}`,
     );
-    streamState.hasPendingPrompt = false;
 
     // check for gameOver
     if (gameState.isGameOver) {
       enterGameEndState();
     } else {
       saveCurrentGame().catch((error) => {
-        appendChatHtml(`<div class="msg-ai">[Error]: ${escapeHtml(error.message)}</div>`);
-        streamState.state = "error";
+        appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
         console.error(error.message);
       });
     }
-    resetStreamState();
   } catch (error) {
-    // Parse failure (missing/invalid <choices> payload). updateChoices throws
-    // before mutating gameState, so we can roll back in place instead of
-    // running the heavy alert + loadActiveSave recovery path.
-    console.error("finishAiResponse parse failure:", error);
-    rollbackPendingPrompt();
-
-    if (gameState.lastVisibleResponse) {
-      setChatHtml(`<div class="msg-ai">${escapeHtml(gameState.lastVisibleResponse)}</div>`);
-    } else {
-      setChatHtml(`<div class="msg-ai">No AI responses yet.</div>`);
-    }
-    appendChatHtml(
-      `<div class="msg-ai">[Error]: AI response was malformed (${escapeHtml(error.message)}). Please try your action again.</div>`
-    );
-
-    renderChoices();
-    setChoiceControlsDisabled(false);
+    appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+    console.error(error.message);
+  } finally {
     resetStreamState();
   }
 }
@@ -761,15 +675,15 @@ function renderChatHistory() {
     .map((entry) => {
       if (entry.startsWith("Prompt ")) {
         const text = entry.replace(/^Prompt \d+: /, "");
-        return `<div class="msg-user"><strong>You:</strong> ${escapeHtml(text)}</div>\n\n`;
+        return `<div class="msg-user"><strong>You:</strong> ${text}</div>\n\n`;
       }
 
       if (entry.startsWith("Response ")) {
         const text = entry.replace(/^Response \d+: /, "");
-        return `<div class="msg-ai">${escapeHtml(text)}</div>`;
+        return `<div class="msg-ai">${text}</div>`;
       }
 
-      return `<div class="msg-ai">${escapeHtml(entry)}</div>`;
+      return `<div class="msg-ai">${entry}</div>`;
     })
     .join("");
 
@@ -795,11 +709,11 @@ function enterGameEndState() {
 
   // only show the last response
   if (gameState.lastVisibleResponse) {
-    setChatHtml(`<div class="msg-ai">${escapeHtml(gameState.lastVisibleResponse)}</div>`);
+    setChatHtml(`<div class="msg-ai">${gameState.lastVisibleResponse}</div>`);
   }
 
   saveCurrentGame().catch((error) => {
-    appendChatHtml(`<div class="msg-ai">[Error]: ${escapeHtml(error.message)}</div>`);
+    appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
   });
 }
@@ -820,9 +734,8 @@ function restoreInteractiveChat() {
 }
 
 // handle chunks in the main AI's response stream
-function handleAiChunk(delta) {
-  streamState.secondsSinceLastChunk = 0;
-  streamState.fullResponse += delta;
+function handleAiChunk(message) {
+  streamState.fullResponse += message.slice(9);
 
   if (streamState.isChoicesHidden) return;
 
@@ -838,7 +751,7 @@ function handleAiChunk(delta) {
     streamState.isChoicesHidden = true;
   }
 
-  setChatHtml(`<div class="msg-ai">${escapeHtml(streamState.visibleResponse)}</div>`);
+  setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
 }
 
 // build the prompt for main AI
@@ -888,7 +801,7 @@ function sendMessage() {
 
   const prompt = buildPrompt(inputText);
   appendChatHtml(
-    `<div class="msg-user"><strong>You:</strong> ${escapeHtml(inputText)}</div>`,
+    `<div class="msg-user"><strong>You:</strong> ${inputText}</div>`,
   );
   elements.chatWindow.scrollTop = elements.chatWindow.scrollHeight;
 
@@ -901,7 +814,6 @@ function sendMessage() {
   gameState.chatHistory.push(
     `Prompt ${Math.floor(gameState.chatHistory.length / 2)}: ${inputText}`,
   );
-  streamState.hasPendingPrompt = true;
   elements.userInput.value = "";
 
   // update stream state
@@ -927,25 +839,6 @@ function applyChoice(choiceNumber) {
   sendMessage();
 }
 
-// REST timeout: REST endpoints are quick (mongo + small business logic).
-// AI streaming uses sockets, not fetch.
-const REST_TIMEOUT_MS = 30_000;
-
-async function fetchWithTimeout(url, options = {}, timeoutMs = REST_TIMEOUT_MS) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } catch (error) {
-    if (error?.name === "AbortError") {
-      throw new Error(`Request timed out after ${timeoutMs / 1000}s.`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
 // auth helper
 function authHeaders() {
   return {
@@ -959,7 +852,7 @@ async function loadActiveSave() {
   if (!gameState.saveId) return false;
 
   // get the active save's data from server
-  const response = await fetchWithTimeout(`/api/saves/${gameState.saveId}`, {
+  const response = await fetch(`/api/saves/${gameState.saveId}`, {
     headers: authHeaders(),
   });
   const data = await response.json();
@@ -992,7 +885,7 @@ async function loadActiveSave() {
     enterGameEndState();
   } else {
     // continue the game with the loaded save
-
+    
     restoreInteractiveChat();
   }
 
@@ -1019,7 +912,7 @@ async function checkValidUser() {
       showElement(elements.questSelect);
     }
   } catch (error) {
-    appendChatHtml(`<div class="msg-ai">[Error]: ${escapeHtml(error.message)}</div>`);
+    appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
   }
 }
@@ -1033,15 +926,15 @@ function recoverLastConversation() {
   // recover the last conversation
   if (streamState.state === "receivingChunks") {
     // if there is an ongoing stream, show the visible part of the response
-    setChatHtml(`<div class="msg-ai">${escapeHtml(streamState.visibleResponse)}</div>`);
+    setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
   } else if (streamState.state === "waitingForFirstChunk") {
     // if there is an ongoing stream but the response is not received, show a thinking message
     setChatHtml(
-      `<div class="msg-user"><strong>You:</strong> ${escapeHtml(streamState.lastInputText)}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
+      `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
     );
   } else if (streamState.state === "idle" && gameState.lastVisibleResponse) {
     // if there is no ongoing stream but there is a last response, show the last response
-    setChatHtml(`<div class="msg-ai">${escapeHtml(gameState.lastVisibleResponse)}</div>`);
+    setChatHtml(`<div class="msg-ai">${gameState.lastVisibleResponse}</div>`);
   } else {
     // if there is no response at all, show a default message
     setChatHtml(`<div class="msg-ai">No AI responses yet.</div>`);
@@ -1117,51 +1010,21 @@ socket.on("connect", () => {
   }
 });
 
-// handle disconnection: show a message and try to recover if it happens during an AI stream
-socket.on("disconnect", (reason) => {
-  console.warn("Socket disconnected:", reason);
-  if (
-    streamState.state === "waitingForFirstChunk" ||
-    streamState.state === "receivingChunks"
-  ) {
-    streamState.errorMessage = `Connection to server lost (${reason}).`;
-    streamState.state = "error";
-  }
-});
-
-socket.on("connect_error", (error) => {
-  console.error("Socket connect error:", error.message);
-  if (
-    streamState.state === "waitingForFirstChunk" ||
-    streamState.state === "receivingChunks"
-  ) {
-    streamState.errorMessage = `Cannot reach server: ${error.message}`;
-    streamState.state = "error";
-  }
-});
-
 // handle main AI response
-socket.on("ai_stream", (event) => {
-  // Backwards-tolerant: ignore any legacy string payloads.
-  if (!event || typeof event !== "object") return;
-
-  if (event.type === "start") {
+socket.on("ai_stream", (message) => {
+  if (message === "start") {
     setChatHtml(
-      `<div class="msg-user"><strong>You:</strong> ${escapeHtml(streamState.lastInputText)}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
+      `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
     );
     streamState.state = "waitingForFirstChunk";
-    streamState.thinkingTimeCounter = 0;
-    streamState.secondsSinceLastChunk = 0;
-  } else if (event.type === "error") {
-    const message = event.message || "Unknown server error.";
-    appendChatHtml(`<div class="msg-ai" id="loading">[Error]: ${escapeHtml(message)}</div>`);
-    console.error("ai_stream error:", message);
-    streamState.errorMessage = message;
-    streamState.state = "error";
-  } else if (event.type === "chunk") {
+  } else if (message.startsWith("[Error]")) {
+    appendChatHtml(`<div class="msg-ai" id="loading">${message}</div>`);
+    console.error(message);
+    setChoiceControlsDisabled(false);
+  } else if (message.startsWith("[Chunk]")) {
     streamState.state = "receivingChunks";
-    handleAiChunk(event.delta || "");
-  } else if (event.type === "end") {
+    handleAiChunk(message);
+  } else if (message === "end") {
     streamState.state = "idle";
     finishAiResponse();
   }
@@ -1170,20 +1033,17 @@ socket.on("ai_stream", (event) => {
 });
 
 // check for data AI failure
-socket.on("data_response", (event) => {
-  if (!event || typeof event !== "object") return;
-
-  if (event.type === "error") {
-    const message = event.message || "Unknown error.";
+socket.on("data_response", (message) => {
+  if (message.startsWith("[Error]")) {
     appendChatHtml(
-      `<div class="msg-ai"><strong>Data AI:</strong> [Error]: ${escapeHtml(message)}</div>`,
+      `<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`,
     );
-    console.error("data_response error:", message);
-  } else if (event.type === "summary" && typeof event.content === "string") {
+    console.error(message);
+  } else {
     // update gameState and auto save
-    gameState.eventMemory.add(event.content);
+    gameState.eventMemory.add(message);
     saveCurrentGame().catch((error) => {
-      appendChatHtml(`<div class="msg-ai">[Error]: ${escapeHtml(error.message)}</div>`);
+      appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
       console.error(error.message);
     });
   }

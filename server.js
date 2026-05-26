@@ -26,10 +26,6 @@ const AI_API = {
   dataModel: "gemini-3-flash-preview",
 };
 
-// Idle timeout for upstream AI calls. For streaming, this is the gap
-// between chunks; for non-streaming, the overall request budget.
-const AI_REQUEST_TIMEOUT_MS = 180_000;
-
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer);
@@ -47,35 +43,11 @@ const mongoClient = new MongoClient(MONGODB_URI, {
   serverSelectionTimeoutMS: 60000,
 });
 
-// If the underlying topology drops (mongo restart, network blip), reset the
-// flag so the next request triggers a fresh connect() instead of operating
-// on a closed client.
-mongoClient.on("close", () => {
-  console.warn("MongoDB connection closed.");
-  mongoConnected = false;
-});
-mongoClient.on("topologyClosed", () => {
-  console.warn("MongoDB topology closed.");
-  mongoConnected = false;
-});
-
 // MongoDB connection
 let mongoConnected = false;
-let mongoConnecting = null;
 
 app.use(express.static(PUBLIC_DIR));
-app.use(express.json({ limit: "1mb" }));
-
-// Centralised error -> response helper. Logs the full error server-side and
-// returns a generic message to clients; route-specific 4xx responses already
-// happen inline above each try/catch, so this only fires for unexpected
-// failures (Mongo errors, programmer mistakes, etc.) where we don't want to
-// leak internals.
-function sendInternalError(req, res, error) {
-  console.error(`[${req.method} ${req.originalUrl}]`, error);
-  if (res.headersSent) return;
-  res.status(500).json({ error: "Internal server error." });
-}
+app.use(express.json());
 
 // routers
 app.get("/", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "index.html")));
@@ -97,7 +69,7 @@ app.get("/api/me", async (req, res) => {
       },
     });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -117,7 +89,7 @@ app.get("/api/saves", async (req, res) => {
 
     res.json({ saves });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -127,10 +99,6 @@ app.get("/api/saves/:id", async (req, res) => {
     const user = await requireAuthUser(req);
     if (!user) {
       return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    if (!ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ error: "Invalid save id." });
     }
 
     const save = await getSavesCollection().findOne(
@@ -149,7 +117,7 @@ app.get("/api/saves/:id", async (req, res) => {
 
     res.json({ save });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -193,7 +161,7 @@ app.post("/api/auth/register", async (req, res) => {
       token: sessionToken,
     });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -225,7 +193,7 @@ app.post("/api/auth/login", async (req, res) => {
       token: sessionToken,
     });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -252,7 +220,7 @@ app.post("/api/saves", async (req, res) => {
 
     res.json({ saveId: result.insertedId.toString() });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -262,10 +230,6 @@ app.put("/api/saves/:id", async (req, res) => {
     const user = await requireAuthUser(req);
     if (!user) {
       return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    if (!ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ error: "Invalid save id." });
     }
 
     // check for what to update
@@ -286,7 +250,7 @@ app.put("/api/saves/:id", async (req, res) => {
 
     res.json({ matched: result.matchedCount, modified: result.modifiedCount });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -298,10 +262,6 @@ app.delete("/api/saves/:id", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if (!ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ error: "Invalid save id." });
-    }
-
     const result = await getSavesCollection().deleteOne({
       _id: new ObjectId(req.params.id),
       userId: user._id,
@@ -309,59 +269,29 @@ app.delete("/api/saves/:id", async (req, res) => {
 
     res.json({ deleted: result.deletedCount });
   } catch (error) {
-    sendInternalError(req, res, error);
+    res.status(500).json({ error: error.message });
   }
-});
-
-// Global error middleware: catches body-parser errors (malformed JSON, payload
-// too large) and any error a route forwarded with next(err). Routes still
-// return their own JSON errors via try/catch above; this is the safety net.
-app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
-
-  if (err.type === "entity.parse.failed") {
-    return res.status(400).json({ error: "Invalid JSON body." });
-  }
-  if (err.type === "entity.too.large") {
-    return res.status(413).json({ error: "Request body too large." });
-  }
-
-  console.error("Unhandled error:", err);
-  res.status(500).json({ error: "Internal server error." });
 });
 
 io.on("connection", (socket) => {
 
-  // ai stream
+  // ai stream 
   socket.on("ask_ai", async (payload = {}) => {
-    const controller = new AbortController();
-    const onDisconnect = () => controller.abort(new Error("Client disconnected"));
-    socket.once("disconnect", onDisconnect);
-
     try {
       const { prompt, currentInput, token } = payload;
       if (!token) throw new Error("Missing session token.");
-      if (typeof prompt !== "string" || !prompt.trim()) {
-        throw new Error("Missing prompt.");
-      }
 
-      const user = await getSessionUser(token);
-      if (!user) throw new Error("Invalid session token.");
-
-      socket.emit("ai_stream", { type: "start" });
+      socket.emit("ai_stream", "start");
       const aiMessage = await streamChatCompletion({
         model: AI_API.mainModel,
         prompt,
-        signal: controller.signal,
-        onChunk: (delta) => socket.emit("ai_stream", { type: "chunk", delta }),
+        onChunk: (delta) => socket.emit("ai_stream", `[Chunk]: ${delta}`),
       });
 
-      socket.emit("ai_stream", { type: "end" });
-      await summarizeConversation(socket, currentInput, aiMessage, controller.signal);
+      socket.emit("ai_stream", "end");
+      await summarizeConversation(socket, currentInput, aiMessage);
     } catch (error) {
-      socket.emit("ai_stream", { type: "error", message: error.message });
-    } finally {
-      socket.off("disconnect", onDisconnect);
+      socket.emit("ai_stream", `[Error]: ${error.message}`);
     }
   });
 });
@@ -369,18 +299,9 @@ io.on("connection", (socket) => {
 // create connection to db
 async function connectMongo() {
   if (mongoConnected) return;
-  if (mongoConnecting) return mongoConnecting;
-
-  mongoConnecting = (async () => {
-    try {
-      await mongoClient.connect();
-      mongoConnected = true;
-      console.log("Connected to MongoDB.");
-    } finally {
-      mongoConnecting = null;
-    }
-  })();
-  return mongoConnecting;
+  await mongoClient.connect();
+  mongoConnected = true;
+  console.log("Connected to MongoDB.");
 }
 
 // get all users
@@ -475,107 +396,56 @@ async function requireAuthUser(req) {
 }
 
 // stream output
-async function streamChatCompletion({ model, prompt, onChunk, signal }) {
-  const idleController = new AbortController();
-  let idleTimer = null;
-  let timedOut = false;
-  const resetIdleTimer = () => {
-    if (idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-      timedOut = true;
-      idleController.abort();
-    }, AI_REQUEST_TIMEOUT_MS);
-  };
+async function streamChatCompletion({ model, prompt, onChunk }) {
+  const response = await fetch(AI_API.baseUrl, {
+    method: "POST",
+    headers: getAiHeaders(),
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: prompt }],
+      stream: true,
+    }),
+  });
 
-  const composedSignal = signal
-    ? AbortSignal.any([signal, idleController.signal])
-    : idleController.signal;
+  if (!response.ok) {
+    throw new Error(`API request failed, status code: ${response.status}`);
+  }
 
-  resetIdleTimer();
+  const decoder = new TextDecoder("utf-8");
+  
+  let buffer = "";
+  let fullMessage = "";
 
-  try {
-    const response = await fetch(AI_API.baseUrl, {
-      method: "POST",
-      headers: getAiHeaders(),
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: prompt }],
-        stream: true,
-      }),
-      signal: composedSignal,
-    });
+  for await (const chunk of response.body) {
+    buffer += decoder.decode(chunk, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
 
-    if (!response.ok) {
-      const errBody = await response.text().catch(() => "");
-      throw new Error(
-        `Upstream ${response.status} ${response.statusText}: ${errBody.slice(0, 500) || "<empty body>"}`
-      );
-    }
+    for (const line of lines) {
+      if (!line.trim() || !line.startsWith("data: ")) continue;
 
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    let fullMessage = "";
-
-    const handleLine = (line) => {
-      if (!line.trim() || !line.startsWith("data: ")) return null;
       const payload = line.replace("data: ", "").trim();
-      if (payload === "[DONE]") return "DONE";
+      if (payload === "[DONE]") return fullMessage;
 
-      let data;
       try {
-        data = JSON.parse(payload);
+        const data = JSON.parse(payload);
+        const delta = data.choices[0]?.delta?.content;
+        if (delta) {
+          fullMessage += delta;
+          onChunk(delta);
+        }
       } catch (error) {
         console.error("Error parsing stream chunk:", error, line);
-        return null;
-      }
-
-      if (data.error) {
-        const message = data.error.message || JSON.stringify(data.error);
-        throw new Error(`Upstream error: ${message}`);
-      }
-
-      const delta = data.choices?.[0]?.delta?.content;
-      if (delta) {
-        fullMessage += delta;
-        onChunk(delta);
-      }
-      return null;
-    };
-
-    for await (const chunk of response.body) {
-      resetIdleTimer();
-      buffer += decoder.decode(chunk, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (handleLine(line) === "DONE") return fullMessage;
       }
     }
-
-    // flush any trailing line left in the buffer
-    buffer += decoder.decode();
-    if (buffer.trim()) {
-      if (handleLine(buffer) === "DONE") return fullMessage;
-    }
-
-    return fullMessage;
-  } catch (error) {
-    if (timedOut || error?.name === "AbortError") {
-      if (timedOut) {
-        throw new Error(`Upstream timeout after ${AI_REQUEST_TIMEOUT_MS / 1000}s of inactivity.`);
-      }
-      throw new Error("Upstream request cancelled.");
-    }
-    throw error;
-  } finally {
-    if (idleTimer) clearTimeout(idleTimer);
   }
+
+  return fullMessage;
 }
 
 // data AI: summarize the last conversation
-async function summarizeConversation(socket, currentInput, aiResponse, externalSignal) {
-
+async function summarizeConversation(socket, currentInput, aiResponse) {
+  
   const prompt = [
     "Summarize and organize the following conversation for AI to read in a few short and concise sentences.",
     "Include settings, time, location, important events, interactions, and characters.",
@@ -585,12 +455,6 @@ async function summarizeConversation(socket, currentInput, aiResponse, externalS
     `[GameMaster]: ${aiResponse}`,
   ].join("\n");
 
-  const timeoutController = new AbortController();
-  const timeoutId = setTimeout(() => timeoutController.abort(), AI_REQUEST_TIMEOUT_MS);
-  const composedSignal = externalSignal
-    ? AbortSignal.any([externalSignal, timeoutController.signal])
-    : timeoutController.signal;
-
   try {
     const response = await fetch(AI_API.baseUrl, {
       method: "POST",
@@ -599,40 +463,16 @@ async function summarizeConversation(socket, currentInput, aiResponse, externalS
         model: AI_API.dataModel,
         messages: [{ role: "user", content: prompt }],
       }),
-      signal: composedSignal,
     });
 
     if (!response.ok) {
-      const errBody = await response.text().catch(() => "");
-      throw new Error(
-        `Upstream ${response.status} ${response.statusText}: ${errBody.slice(0, 500) || "<empty body>"}`
-      );
+      throw new Error(`API request failed, status code: ${response.status}`);
     }
 
     const data = await response.json();
-    if (data.error) {
-      const message = data.error.message || JSON.stringify(data.error);
-      throw new Error(`Upstream error: ${message}`);
-    }
-
-    const content = data.choices?.[0]?.message?.content;
-    if (typeof content !== "string") {
-      throw new Error("Upstream response missing choices[0].message.content.");
-    }
-
-    socket.emit("data_response", { type: "summary", content });
+    socket.emit("data_response", data.choices[0].message.content);
   } catch (error) {
-    let message;
-    if (timeoutController.signal.aborted && !externalSignal?.aborted) {
-      message = `Upstream timeout after ${AI_REQUEST_TIMEOUT_MS / 1000}s.`;
-    } else if (error?.name === "AbortError") {
-      message = "Upstream request cancelled.";
-    } else {
-      message = error.message;
-    }
-    socket.emit("data_response", { type: "error", message });
-  } finally {
-    clearTimeout(timeoutId);
+    socket.emit("data_response", `[Error]: ${error.message}`);
   }
 }
 
