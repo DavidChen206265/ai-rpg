@@ -473,7 +473,7 @@ JSON update instructions:
 4. in playerStatus.modifiers, skills, inventory, you can add / edit / delete fields;
 5. you must maintain the format for each field;
 6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
-7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless the user uses some type of enhancement magic or specialized training, these values should not change between prompts.
+7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless some type of enhancement/debuff magic or specialized training is used, these values should not change between prompts.
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
@@ -963,6 +963,7 @@ function applyChoice(choiceNumber) {
 
   // generate luck
   let roll = Math.floor(Math.random() * 20) + 1;
+  console.log("original luck roll: " + roll);
   let CurrentChoiceType = gameState.choiceTypes[choiceIndex];
   if(CurrentChoiceType == "strength"){
     roll = roll + gameState.playerStatus.strength;
