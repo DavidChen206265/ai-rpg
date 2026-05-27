@@ -962,7 +962,7 @@ function applyChoice(choiceNumber) {
   if (!selectedButton || !selectedButton.textContent) return;
 
   // generate luck
-  const roll = Math.floor(Math.random() * 20) + 1;
+  let roll = Math.floor(Math.random() * 20) + 1;
   let CurrentChoiceType = gameState.choiceTypes[choiceIndex];
   if(CurrentChoiceType == "strength"){
     roll = roll + gameState.playerStatus.strength;
