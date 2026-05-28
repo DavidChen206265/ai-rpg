@@ -12,6 +12,8 @@ const HIDDEN_CLASS = "is-hidden";
 const AUTH_TOKEN_KEY = "ai_rpg_token";
 const AUTH_USER_KEY = "ai_rpg_user";
 
+const modules = import.meta.glob('./imgs/*.jpg', { eager: true });
+
 // save keys
 const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
 const ACTIVE_SAVE_TITLE_KEY = "ai_rpg_active_save_title";
@@ -195,6 +197,9 @@ const gameState = {
       trigger: "",
       reward: "",
     },
+  },
+  ui: {
+    backgroundImage: "lake.jpg",
   },
   selectedQuestName: quests[1].name,
   selectedCharacterName: characters[2].name,
@@ -517,7 +522,7 @@ e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [ac
 
 JSON update instructions:
 1. turn gameOver to true if playerStatus.health.current <= 0, but set it to 0 since health can not be less than 0; current health must <= max health.
-2. in playerStatus(except playerStatus.modifiers) and achievements, you can only edit the value of fields, must not add / delete fields;
+2. in playerStatus(except playerStatus.modifiers), achievements and ui, you can only edit the value of existing fields, must not add / delete fields;
 3. in relationships, you can only add new relationships / edit exiting ones but must not delete any of them;
 4. in playerStatus.modifiers, skills, inventory, you can add / edit / delete fields;
 5. you must maintain the format for each field;
@@ -526,6 +531,9 @@ JSON update instructions:
 8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. 
 9. When the user moves forward a room, set progression to 1. If the user goes back a room, set progression to -1. If the user does not move rooms, progression should be 0. Do not let the user move more than 1 room forward at a time.
 10. The average difficulty of a choice should be 13. Because the stats of the user are added to their roll, do not decrease the difficulty of choices if the user is good at them, or increase the difficulty if they are bad at them. This is already handled in the code outside this prompt.
+
+UI update instructions:
+1. backgroundImage includes: "default" (if you can not find matched backgrounds)${getAllBackgrounds()}
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
@@ -598,9 +606,20 @@ JSON format:
       "reward": "",
     },
   },
+  "ui": {
+    "backgroundImage": "lake.jpg",
+  },
 }
 
 DO NOT REPLY IN THE MARKDOWN FORMAT!!!`;
+}
+
+function getAllBackgrounds() {
+  let fileNames = "";
+  for (const path in modules) {
+    fileNames += `; ${path.slice(7, path.length)}`;    
+  }
+  return fileNames;
 }
 
 // select a quest (from 1 to 3)
@@ -721,7 +740,11 @@ function updateChoices(responseText) {
   gameState.choiceTypes[0] = choicePayload.choice1type;
   gameState.choiceTypes[1] = choicePayload.choice2type;
   gameState.choiceTypes[2] = choicePayload.choice3type;
+  gameState.ui = choicePayload.ui;
   gameState.puzzleMode = choicePayload.puzzleMode;
+
+  // update UI
+  changeBackgroundTo(gameState.ui.backgroundImage);
 
   // check for game over
   if (choicePayload.gameOver === true || choicePayload.gameOver === "true") {
@@ -1034,16 +1057,16 @@ function applyChoice(choiceNumber) {
   let roll = Math.floor(Math.random() * 20) + 1;
   console.log("original luck roll: " + roll);
   let CurrentChoiceType = gameState.choiceTypes[choiceIndex];
-  if(CurrentChoiceType == "strength"){
+  if (CurrentChoiceType == "strength") {
     roll = roll + gameState.playerStatus.strength;
   }
-  if(CurrentChoiceType == "agility"){
+  if (CurrentChoiceType == "agility") {
     roll = roll + gameState.playerStatus.agility;
   }
-  if(CurrentChoiceType == "intelligence"){
+  if (CurrentChoiceType == "intelligence") {
     roll = roll + gameState.playerStatus.intelligence;
   }
-  if(CurrentChoiceType == "magic"){
+  if (CurrentChoiceType == "magic") {
     roll = roll + gameState.playerStatus.magic;
   }
   console.log("luck: " + roll + " type: " + CurrentChoiceType);
@@ -1220,7 +1243,7 @@ function setButtonEvents() {
     playerPanelHtml += `Achievements: \n${JSON.stringify(gameState.achievements, null, 2)} \n\n`;
 
     setChatHtml(playerPanelHtml);
-  })
+  });
 
   elements.actionForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1238,6 +1261,14 @@ function setButtonEvents() {
   choiceButtons.forEach((button, index) => {
     button.addEventListener("click", () => applyChoice(index + 1));
   });
+}
+
+function changeBackgroundTo(img) {
+  if (img === "default") {
+    document.body.style.backgroundImage = "none";
+  } else {
+    document.body.style.backgroundImage = `url(imgs/${img})`;
+  }
 }
 
 socket.on("connect", () => {
