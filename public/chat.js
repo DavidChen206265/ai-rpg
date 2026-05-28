@@ -90,7 +90,7 @@ const quests = {
   2: {
     name: "Ninja Office",
     prompt:
-      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones) (The weapon or skill the ninja is a master at shouldn't be directly told to the player immediately, it should only be revealed when the ninja actually uses their weapon or ability. Subtle clues are allowed however, like the throwing knife scissors ninja holding suspiciously sharp scissors, but it shouldn't be said immediately that they are throwing knives unless the ninja uses them as such). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
+      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones) (The weapon or skill the ninja is a master at shouldn't be directly told to the player immediately, it should only be revealed when the ninja actually uses their weapon or ability. Subtle clues are allowed however, like the throwing knife scissors ninja holding suspiciously sharp scissors, but it shouldn't be said immediately that they are throwing knives unless the ninja uses them as such). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the building are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
     blurb:
       "Infiltrate and take out the leader of a band of office ninjas in their corporate headquarters.",
   },
@@ -140,6 +140,7 @@ const gameState = {
   questInfo: quests[1].prompt,
   characterDescription: characters[2].description,
   developerMode: "",
+  puzzleMode: false,
   isGameOver: false,
   currentProgress: 1,
   playerStatus: {
@@ -498,7 +499,7 @@ You are a game master, running a fantasy game. The user's character is ${gameSta
 
 ${gameState.developerMode}
 
-If there is a puzzle or riddle presented to the user, make at least one of the three choices an incorrect answer (but don't make it too obvious) and give it a difficulty of 20, as to make it almost impossible for the user to succeed. There should also be a correct answer, with a difficulty reflecting how hard it would be to actually pull off the solution. (don't make it too difficult however) Avoid having a choice just be "solve the puzzle", the user actually has to deduce which answer solves the puzzle. 
+In a puzzle, only the correct answer to the puzzle should allow the puzzle to be completed. Allow a little lenience with puzzle solutions, but incorrect answers should not successfully complete the puzzle. Try not to make puzzles that can only be solved when presented with the 3 options, the user should be able to figure out the answer to the puzzle from the description alone. (the user has to type the solution themselves, the 3 options are hidden from view in a puzzle) (try to make puzzles with the difficulty for someone about 15 years of age)
 
 The choice / custom input's difficulty must be calculated by relative player status and all applicable modifiers!
 
@@ -513,6 +514,7 @@ JSON update instructions:
 5. you must maintain the format for each field;
 6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
 7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless some type of enhancement/debuff magic or specialized training is used, these values should not change between prompts.
+8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. 
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
@@ -527,6 +529,7 @@ JSON format:
   "choice3": "Choice 3 text.",
   "choice3difficulty": 10,
   "choice3type": "strength",
+  "puzzleMode": false,
   "gameOver": false,
   "healthLost": 0,
   "healthGained": 0,
@@ -707,10 +710,23 @@ function updateChoices(responseText) {
   gameState.choiceTypes[0] = choicePayload.choice1type;
   gameState.choiceTypes[1] = choicePayload.choice2type;
   gameState.choiceTypes[2] = choicePayload.choice3type;
+  gameState.puzzleMode = choicePayload.puzzleMode;
 
   // check for game over
   if (choicePayload.gameOver === true || choicePayload.gameOver === "true") {
     gameState.isGameOver = true;
+  }
+
+  // check for puzzle mode
+  if (gameState.puzzleMode == false){
+    document.getElementById("choice-1").style.display = "inline-block";
+    document.getElementById("choice-2").style.display = "inline-block";
+    document.getElementById("choice-3").style.display = "inline-block";
+  }
+  if (gameState.puzzleMode == true){
+    document.getElementById("choice-1").style.display = "none";
+    document.getElementById("choice-2").style.display = "none";
+    document.getElementById("choice-3").style.display = "none";
   }
 
   // update health
