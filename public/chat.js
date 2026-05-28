@@ -300,6 +300,11 @@ let didYouKnowTexts = [
   "Fitzgerald is the author of the book Eighty Two Ways to Dice Mandrake.",
   "Wilde can identify 3,832 different plants by taste.",
   "Burgess' least favourite book is Eighty Two Ways to Dice Mandrake, because crushing them with your pecs was not included as an option.",
+  "Q: What weighs more, a pound of water or a pound of butane? \n\nA: A pound of water, butane is lighter fluid!",
+  "Fitzgerald's robe is air conditioned, and grows along with them.",
+  "Burgess' brass knuckles are actually an alloy of copper and tin, on account of Burgess mixing up the tin and zinc when he cast them.",
+  "Wilde learned the hard way the difference between Jewelweed and Poison Ivy",
+  "Fitzgerald won the 10th annual Battle of the Books in magic school, granting him the honorary title of the Book Slayer 10.",
 ];
 let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
 let didYouKnowCounter = 0;
@@ -519,6 +524,8 @@ JSON update instructions:
 6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
 7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless some type of enhancement/debuff magic or specialized training is used, these values should not change between prompts.
 8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. 
+9. When the user moves forward a room, set progression to 1. If the user goes back a room, set progression to -1. If the user does not move rooms, progression should be 0. Do not let the user move more than 1 room forward at a time.
+10. The average difficulty of a choice should be 13. Because the stats of the user are added to their roll, do not decrease the difficulty of choices if the user is good at them, or increase the difficulty if they are bad at them. This is already handled in the code outside this prompt.
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
@@ -740,6 +747,9 @@ function updateChoices(responseText) {
   // update currentProgress
   if (choicePayload.progression === 1 || choicePayload.progression === "1") {
     gameState.currentProgress++;
+  }
+  if (choicePayload.progression === -1 || choicePayload.progression === "-1") {
+    gameState.currentProgress--;
   }
 
   // update system prompt
