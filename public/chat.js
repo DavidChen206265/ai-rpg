@@ -92,7 +92,7 @@ const quests = {
   2: {
     name: "Ninja Office",
     prompt:
-      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones) (The weapon or skill the ninja is a master at shouldn't be directly told to the player immediately, it should only be revealed when the ninja actually uses their weapon or ability. Subtle clues are allowed however, like the throwing knife scissors ninja holding suspiciously sharp scissors, but it shouldn't be said immediately that they are throwing knives unless the ninja uses them as such). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
+      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones) (The weapon or skill the ninja is a master at shouldn't be directly told to the player immediately, it should only be revealed when the ninja actually uses their weapon or ability. Subtle clues are allowed however, like the throwing knife scissors ninja holding suspiciously sharp scissors, but it shouldn't be said immediately that they are throwing knives unless the ninja uses them as such). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the building are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
     blurb:
       "Infiltrate and take out the leader of a band of office ninjas in their corporate headquarters.",
   },
@@ -111,7 +111,7 @@ const characters = {
     maxHealth: 10,
     profileClass: "profile-wizard",
     description:
-      "Fitzgerald, an aspiring wizard. They have great knowledge of most magic, and tend to use magic instead of physical acts. They can cast most magic, but high level spells drain their energy, so they are used sparingly. While they aren't old, they don't have much defense or stamina, and are not well suited for strength based activity. Their magical prowess makes up for their lack of strength however. They have 10 hit points total. They start with their custom tailored wizard robes, their spellbook, and an emergency mana potion stashed in their pointy hat.",
+      "Fitzgerald, an aspiring wizard, and magic school graduate. They have great knowledge of most magic, and tend to use magic instead of physical acts. They can cast most magic, but high level spells drain their energy, so they are used sparingly. While they aren't old, they don't have much defense or stamina, and are not well suited for strength based activity. Their magical prowess makes up for their lack of strength however. They have 10 hit points total. They start with their custom tailored wizard robes, their spellbook, and an emergency mana potion stashed in their pointy hat.",
     blurb:
       "Fitzgerald - an aspiring wizard with great prowess in the magical arts. They are physically frail and have the lowest maximum health.",
   },
@@ -142,6 +142,7 @@ const gameState = {
   questInfo: quests[1].prompt,
   characterDescription: characters[2].description,
   developerMode: "",
+  puzzleMode: false,
   isGameOver: false,
   currentProgress: 1,
   playerStatus: {
@@ -304,6 +305,11 @@ let didYouKnowTexts = [
   "Fitzgerald is the author of the book Eighty Two Ways to Dice Mandrake.",
   "Wilde can identify 3,832 different plants by taste.",
   "Burgess' least favourite book is Eighty Two Ways to Dice Mandrake, because crushing them with your pecs was not included as an option.",
+  "Q: What weighs more, a pound of water or a pound of butane? \n\nA: A pound of water, butane is lighter fluid!",
+  "Fitzgerald's robe is air conditioned, and grows along with them.",
+  "Burgess' brass knuckles are actually an alloy of copper and tin, on account of Burgess mixing up the tin and zinc when he cast them.",
+  "Wilde learned the hard way the difference between Jewelweed and Poison Ivy",
+  "Fitzgerald won the 10th annual Battle of the Books in magic school, granting him the honorary title of the Book Slayer 10.",
 ];
 let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
 let didYouKnowCounter = 0;
@@ -454,6 +460,8 @@ function createSaveSnapshot() {
     choices: gameState.choices,
     pendingLuckMessage: gameState.pendingLuckMessage,
     lastVisibleResponse: gameState.lastVisibleResponse,
+    puzzleMode: gameState.puzzleMode,
+    choiceTypes: gameState.choiceTypes,
   };
 }
 
@@ -489,6 +497,8 @@ function applySaveSnapshot(snapshot = {}) {
     : gameState.choices;
   gameState.pendingLuckMessage = snapshot.pendingLuckMessage || "";
   gameState.lastVisibleResponse = snapshot.lastVisibleResponse || "";
+  gameState.puzzleMode = snapshot.puzzleMode;
+  gameState.choiceTypes = snapshot.choiceTypes;
 }
 
 // update the system prompt by  quest & character user selected
@@ -503,7 +513,7 @@ You are a game master, running a fantasy game. The user's character is ${gameSta
 
 ${gameState.developerMode}
 
-If there is a puzzle or riddle presented to the user, make at least one of the three choices an incorrect answer (but don't make it too obvious) and give it a difficulty of 20, as to make it almost impossible for the user to succeed. There should also be a correct answer, with a difficulty reflecting how hard it would be to actually pull off the solution. (don't make it too difficult however) Avoid having a choice just be "solve the puzzle", the user actually has to deduce which answer solves the puzzle. 
+In a puzzle, only the correct answer to the puzzle should allow the puzzle to be completed. Allow a little lenience with puzzle solutions, but incorrect answers should not successfully complete the puzzle. Try not to make puzzles that can only be solved when presented with the 3 options, the user should be able to figure out the answer to the puzzle from the description alone. (the user has to type the solution themselves, the 3 options are hidden from view in a puzzle) (try to make puzzles with the difficulty for someone about 15 years of age)
 
 The choice / custom input's difficulty must be calculated by relative player status and all applicable modifiers!
 
@@ -518,6 +528,9 @@ JSON update instructions:
 5. you must maintain the format for each field;
 6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
 7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless some type of enhancement/debuff magic or specialized training is used, these values should not change between prompts.
+8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. 
+9. When the user moves forward a room, set progression to 1. If the user goes back a room, set progression to -1. If the user does not move rooms, progression should be 0. Do not let the user move more than 1 room forward at a time.
+10. The average difficulty of a choice should be 13. Because the stats of the user are added to their roll, do not decrease the difficulty of choices if the user is good at them, or increase the difficulty if they are bad at them. This is already handled in the code outside this prompt.
 
 UI update instructions:
 1. backgroundImage includes: "default" (if you can not find matched backgrounds)${getAllBackgrounds()}
@@ -535,6 +548,7 @@ JSON format:
   "choice3": "Choice 3 text.",
   "choice3difficulty": 10,
   "choice3type": "strength",
+  "puzzleMode": false,
   "gameOver": false,
   "healthLost": 0,
   "healthGained": 0,
@@ -727,6 +741,7 @@ function updateChoices(responseText) {
   gameState.choiceTypes[1] = choicePayload.choice2type;
   gameState.choiceTypes[2] = choicePayload.choice3type;
   gameState.ui = choicePayload.ui;
+  gameState.puzzleMode = choicePayload.puzzleMode;
 
   // update UI
   changeBackgroundTo(gameState.ui.backgroundImage);
@@ -736,6 +751,18 @@ function updateChoices(responseText) {
     gameState.isGameOver = true;
   }
 
+  // check for puzzle mode
+  if (gameState.puzzleMode == false){
+    document.getElementById("choice-1").style.display = "inline-block";
+    document.getElementById("choice-2").style.display = "inline-block";
+    document.getElementById("choice-3").style.display = "inline-block";
+  }
+  if (gameState.puzzleMode == true){
+    document.getElementById("choice-1").style.display = "none";
+    document.getElementById("choice-2").style.display = "none";
+    document.getElementById("choice-3").style.display = "none";
+  }
+
   // update health
   gameState.playerStatus.health.current = choicePayload.playerStatus.health.current;
   renderHealth();
@@ -743,6 +770,9 @@ function updateChoices(responseText) {
   // update currentProgress
   if (choicePayload.progression === 1 || choicePayload.progression === "1") {
     gameState.currentProgress++;
+  }
+  if (choicePayload.progression === -1 || choicePayload.progression === "-1") {
+    gameState.currentProgress--;
   }
 
   // update system prompt

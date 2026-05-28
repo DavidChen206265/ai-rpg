@@ -18,7 +18,7 @@
   },
   "main": "server.js",
   "devDependencies": {
-    "vite": "^4.5.5"
+    "vite": "^4.5.14"
   },
   "repository": {
     "type": "git",
