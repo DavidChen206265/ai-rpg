@@ -450,6 +450,8 @@ function createSaveSnapshot() {
     choices: gameState.choices,
     pendingLuckMessage: gameState.pendingLuckMessage,
     lastVisibleResponse: gameState.lastVisibleResponse,
+    puzzleMode: gameState.puzzleMode,
+    choiceTypes: gameState.choiceTypes,
   };
 }
 
@@ -485,6 +487,8 @@ function applySaveSnapshot(snapshot = {}) {
     : gameState.choices;
   gameState.pendingLuckMessage = snapshot.pendingLuckMessage || "";
   gameState.lastVisibleResponse = snapshot.lastVisibleResponse || "";
+  gameState.puzzleMode = snapshot.puzzleMode;
+  gameState.choiceTypes = snapshot.choiceTypes;
 }
 
 // update the system prompt by  quest & character user selected
