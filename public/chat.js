@@ -12,7 +12,7 @@ const HIDDEN_CLASS = "is-hidden";
 const AUTH_TOKEN_KEY = "ai_rpg_token";
 const AUTH_USER_KEY = "ai_rpg_user";
 
-const modules = import.meta.glob('./imgs/*.jpg', { eager: true });
+let backgroundImages = [];
 
 // save keys
 const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
@@ -615,11 +615,22 @@ DO NOT REPLY IN THE MARKDOWN FORMAT!!!`;
 }
 
 function getAllBackgrounds() {
-  let fileNames = "";
-  for (const path in modules) {
-    fileNames += `; ${path.slice(7, path.length)}`;    
+  return backgroundImages.map((fileName) => `; ${fileName}`).join("");
+}
+
+async function loadBackgroundImages() {
+  try {
+    const response = await fetch("/api/background-images");
+    const responseText = await response.text();
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = responseText ? JSON.parse(responseText) : {};
+    backgroundImages = Array.isArray(data.images) ? data.images : [];
+  } catch (error) {
+    console.error("Failed to load background images:", error.message);
   }
-  return fileNames;
 }
 
 // select a quest (from 1 to 3)
@@ -1327,27 +1338,33 @@ socket.on("data_response", (message) => {
   }
 });
 
-// setup eventListeners
-setButtonEvents();
+async function initializePage() {
+  await loadBackgroundImages();
 
-// setup UI
-selectQuest(1, { reveal: true });
-selectCharacter(1, { reveal: true });
+  // setup eventListeners
+  setButtonEvents();
 
-hideElement(elements.startGame);
+  // setup UI
+  selectQuest(1, { reveal: true });
+  selectCharacter(1, { reveal: true });
 
-if (gameState.saveId) {
-  // while loading an existed save
-  hideElement(elements.questSelect);
-  hideElement(elements.characterSelect);
-  hideElement(elements.characterBlurb);
-} else {
-  // while opening a new chat
-  hideElement(elements.chatWindow);
+  hideElement(elements.startGame);
+
+  if (gameState.saveId) {
+    // while loading an existed save
+    hideElement(elements.questSelect);
+    hideElement(elements.characterSelect);
+    hideElement(elements.characterBlurb);
+  } else {
+    // while opening a new chat
+    hideElement(elements.chatWindow);
+  }
+
+  // logout button
+  renderAuthAction();
+
+  // check for valid user
+  checkValidUser();
 }
 
-// logout button
-renderAuthAction();
-
-// check for valid user
-checkValidUser();
+initializePage();

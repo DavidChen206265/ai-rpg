@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const crypto = require("crypto");
+const fs = require("fs/promises");
 const path = require("path");
 const express = require("express");
 const http = require("http");
@@ -10,6 +11,7 @@ const { Server } = require("socket.io");
 const PORT = process.env.PORT || 3000;
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
+const IMAGE_DIR = path.join(PUBLIC_DIR, "imgs");
 
 // MongoDB names
 const DATABASE_NAME = "ai_rpg_db";
@@ -53,6 +55,21 @@ app.use(express.json());
 app.get("/", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "index.html")));
 app.get("/login", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "login.html")));
 app.get("/chat", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "chat.html")));
+
+app.get("/api/background-images", async (req, res) => {
+  try {
+    const entries = await fs.readdir(IMAGE_DIR, { withFileTypes: true });
+    const images = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((fileName) => /\.(jpe?g|png|webp)$/i.test(fileName))
+      .sort((a, b) => a.localeCompare(b));
+
+    res.json({ images });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load background images." });
+  }
+});
 
 // auth helper
 app.get("/api/me", async (req, res) => {
