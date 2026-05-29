@@ -401,6 +401,204 @@ function appendChatHtml(html) {
   elements.chatWindow.innerHTML += html;
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => {
+    const replacements = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return replacements[character];
+  });
+}
+
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeRecordEntries(data) {
+  if (!data) {
+    return [];
+  }
+
+  if (Array.isArray(data)) {
+    return data.map((value, index) => [String(index), value]);
+  }
+
+  if (isPlainObject(data)) {
+    return Object.entries(data);
+  }
+
+  return [];
+}
+
+function formatCharacterPanelValue(value) {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  if (value === null || value === undefined || value === "") return "None";
+  if (isPlainObject(value) || Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
+function getNestedValue(data, path) {
+  return path.split(".").reduce((current, key) => {
+    if (!isPlainObject(current)) {
+      return undefined;
+    }
+
+    return current[key];
+  }, data);
+}
+
+function renderCharacterPanelDetail(label, value) {
+  return `
+    <div class="character-panel-detail">
+      <dt>${escapeHtml(label)}</dt>
+      <dd>${escapeHtml(formatCharacterPanelValue(value))}</dd>
+    </div>
+  `;
+}
+
+function renderCharacterPanelItem(key, item, config) {
+  const safeItem = isPlainObject(item) ? item : { value: item };
+  const titleValue = config.titleField
+    ? getNestedValue(safeItem, config.titleField)
+    : undefined;
+  const title = titleValue || `${config.itemLabel} ${key}`;
+
+  return `
+    <article class="character-panel-list-item" role="listitem">
+      <h4>${escapeHtml(title)}</h4>
+      <dl>
+        ${config.fields
+          .map(({ label, path }) =>
+            renderCharacterPanelDetail(label, getNestedValue(safeItem, path)),
+          )
+          .join("")}
+      </dl>
+    </article>
+  `;
+}
+
+function renderCharacterPanelListSection(title, data, config) {
+  const entries = normalizeRecordEntries(data);
+
+  return `
+    <details class="character-panel-section">
+      <summary>
+        <span>${escapeHtml(title)}</span>
+        <span class="character-panel-count">${entries.length}</span>
+      </summary>
+      <div class="character-panel-list" role="list">
+        ${
+          entries.length
+            ? entries
+                .map(([key, item]) => renderCharacterPanelItem(key, item, config))
+                .join("")
+            : `<p class="character-panel-empty">${escapeHtml(config.emptyText)}</p>`
+        }
+      </div>
+    </details>
+  `;
+}
+
+function renderCharacterStatus(status) {
+  return `
+    <section class="character-status-panel" aria-label="Character status">
+      <h3>Attributes</h3>
+      <dl class="character-status-list">
+        ${renderCharacterPanelDetail("Strength", status.strength)}
+        ${renderCharacterPanelDetail("Agility", status.agility)}
+        ${renderCharacterPanelDetail("Intelligence", status.intelligence)}
+        ${renderCharacterPanelDetail("Magic", status.magic)}
+      </dl>
+    </section>
+  `;
+}
+
+function getSelectedCharacter() {
+  return (
+    Object.values(characters).find(
+      (character) => character.name === gameState.selectedCharacterName,
+    ) || characters[2]
+  );
+}
+
+function renderCharacterPanel() {
+  const character = getSelectedCharacter();
+  const status = gameState.playerStatus;
+
+  return `
+    <div class="character-panel">
+      <div class="character-panel-header">
+        <div class="character-panel-avatar ${character.profileClass}" aria-hidden="true"></div>
+        <div>
+          <p class="character-panel-kicker">Character Panel</p>
+          <h2>${escapeHtml(gameState.selectedCharacterName)}</h2>
+          <p>${escapeHtml(gameState.selectedQuestName)}</p>
+        </div>
+      </div>
+
+      ${renderCharacterStatus(status)}
+
+      <div class="character-panel-grid">
+        ${renderCharacterPanelListSection("Status Modifiers", status.modifiers, {
+          itemLabel: "Modifier",
+          emptyText: "No active modifiers.",
+          fields: [
+            { label: "Duration", path: "duration" },
+            { label: "Effect", path: "modify" },
+          ],
+        })}
+        ${renderCharacterPanelListSection("Inventory", gameState.inventory, {
+          itemLabel: "Item",
+          titleField: "name",
+          emptyText: "No inventory items.",
+          fields: [
+            { label: "Count", path: "number" },
+            { label: "Description", path: "description" },
+            { label: "Effect", path: "modify" },
+          ],
+        })}
+        ${renderCharacterPanelListSection("Relationships", gameState.relationships, {
+          itemLabel: "Relationship",
+          titleField: "name",
+          emptyText: "No relationships.",
+          fields: [
+            { label: "Description", path: "description" },
+            { label: "Relationship", path: "relationship" },
+          ],
+        })}
+        ${renderCharacterPanelListSection("Skills", gameState.skills, {
+          itemLabel: "Skill",
+          titleField: "name",
+          emptyText: "No skills.",
+          fields: [
+            { label: "Description", path: "description" },
+            { label: "Trigger", path: "modifier.trigger" },
+            { label: "Effect", path: "modifier.modify" },
+          ],
+        })}
+        ${renderCharacterPanelListSection("Achievements", gameState.achievements, {
+          itemLabel: "Achievement",
+          titleField: "name",
+          emptyText: "No achievements.",
+          fields: [
+            { label: "Achieved", path: "isAchieved" },
+            { label: "Trigger", path: "trigger" },
+            { label: "Reward", path: "reward" },
+          ],
+        })}
+      </div>
+    </div>
+  `;
+}
+
 // logout button
 function clearSession() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -1245,15 +1443,7 @@ function setButtonEvents() {
     );
     hideElement(elements.actionForm);
 
-    let playerPanelHtml = "";
-    playerPanelHtml += `\n\nCurrent game state: \n\n`;
-    playerPanelHtml += `Status: \n${JSON.stringify(gameState.playerStatus, null, 2)} \n\n`;
-    playerPanelHtml += `Relationships: \n${JSON.stringify(gameState.relationships, null, 2)} \n\n`;
-    playerPanelHtml += `Skills: \n${JSON.stringify(gameState.skills, null, 2)} \n\n`;
-    playerPanelHtml += `Inventory: \n${JSON.stringify(gameState.inventory, null, 2)} \n\n`;
-    playerPanelHtml += `Achievements: \n${JSON.stringify(gameState.achievements, null, 2)} \n\n`;
-
-    setChatHtml(playerPanelHtml);
+    setChatHtml(renderCharacterPanel());
   });
 
   elements.actionForm.addEventListener("submit", (event) => {
@@ -1338,6 +1528,7 @@ socket.on("data_response", (message) => {
   }
 });
 
+// initialize the chat page
 async function initializePage() {
   await loadBackgroundImages();
 
