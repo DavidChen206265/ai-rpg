@@ -59,3 +59,7 @@ Story & Choice: The narrative is characterized by significant branching, allowin
 Character Progression: The system allows for deep customization in class and character building, including managing "attrition rules".
 
 ## dice system: https://bg3.wiki/wiki/Dice_rolls
+
+## Potential Features:
+- Custom character creation
+- Custom quests / free play prompt

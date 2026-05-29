@@ -57,6 +57,7 @@ const questButtons = [
   document.getElementById("quest-1"),
   document.getElementById("quest-2"),
   document.getElementById("quest-3"),
+  document.getElementById("free-play"),
 ];
 
 const characterButtons = [
@@ -103,6 +104,13 @@ const quests = {
     blurb:
       "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
   },
+  4: {
+    name: "Free Play",
+    prompt:
+      "The user is in a classic fantasy world. They will go on quests, make friends, and have a wonderful adventure. Do not update progression in the json, leave it at 0 always, even if the user moves rooms. (because of this, ignore the message saying The user is currently in room 0) This is because there is no set endpoint in this quest, simply keep generating new quests and adventures to let the user go on forever. The only way the game ends is if the user dies, or gets in some inescapable situation where the only way out is dying. It is up to you to decide the time period of the adventure, but there should be three guidelines always followed: 1. Magic is real, and there are magic schools which teach it. Magic is not taboo, and is well accepted as a profession. 2. Do not make a futuristic world, the adventure is fantasy based not sci fi based. 3. The most important thing is to make sure the user has fun. Don't make the game too easy as to get rid of any challenge, aim to make a challenging adventure that feels good to overcome.",
+    blurb:
+      "Free play in a fantasy world! No defined endings, just go on forever!"
+  }
 };
 
 const characters = {
