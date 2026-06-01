@@ -927,6 +927,13 @@ function selectCharacter(characterNumber, options = {}) {
   elements.characterBlurb.textContent = character.blurb;
   elements.characterProfile.className = `character-profile ${character.profileClass}`;
 
+  if(characterNumber == 4){
+    gameState.characterDescription = customDesc;
+    gameState.selectedCharacterName = customName;
+    gameState.playerStatus.health.max = customHealth;
+    gameState.playerStatus.health.current = customHealth;
+  }
+
   if (options.reveal !== false) {
     showElement(elements.characterBlurb);
     showElement(elements.characterProfile);
