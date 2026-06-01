@@ -64,6 +64,7 @@ const characterButtons = [
   document.getElementById("character-1"),
   document.getElementById("character-2"),
   document.getElementById("character-3"),
+  document.getElementById("character-4"),
 ];
 
 const chatActionButtons = [
@@ -909,6 +910,7 @@ function selectCharacter(characterNumber, options = {}) {
     customName = document.getElementById("name-input").value;
     customHealth = document.getElementById("health-input").value;
     customDesc = document.getElementById("desc-input").value;
+    console.log("custom character selected!");
   }
   let character = characters[characterNumber];
   if (!character) {
@@ -936,6 +938,7 @@ function selectCharacter(characterNumber, options = {}) {
     customchar = false;
     showElement(elements.characterBlurb);
     hideElement(document.getElementById("custom-character"));
+    console.log("custom character deselected!");
   }
 
   // update UI
