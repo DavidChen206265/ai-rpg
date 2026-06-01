@@ -43,8 +43,8 @@
         </button>
       </section>
 
-      <section id="character-select" class="setup-panel is-hidden">
-        <div class="button-grid-2">
+      <section id="character-select" class="setup-panel is-hidden"> <!--TEMP REMOVE is-hidden-->
+        <div class="button-grid">
           <button id="character-1" class="option-button" type="button">
             Fitzgerald
           </button>
@@ -58,14 +58,23 @@
           <button id="character-3" class="option-button" type="button">
             Burgess
           </button>
+          <button id="character-4" class="option-button" type="button">
+            Custom
+          </button>
         </div>
         <div class="character-details">
           <div
             id="character-profile"
-            class="character-profile is-hidden"
+            class="character-profile is-hidden" 
             aria-hidden="true"
-          ></div>
+          ></div> <!--TEMP REMOVE is-hidden-->
           <p id="character-blurb" class="selection-copy is-hidden">WIP</p>
+          <div id="custom-character" class=" is-hidden" aria-hidden="true"> <!--TEMP REMOVE is-hidden-->
+            <input type="text" id="name-input" placeholder="Character Name">
+            <input type="number" id="health-input" max="25" min="10" placeholder="Health">
+            <textarea id="desc-input" name="desc-input" placeholder="Character Description">Character Description
+            </textarea>
+          </div>
         </div>
       </section>
 

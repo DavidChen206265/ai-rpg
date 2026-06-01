@@ -113,7 +113,13 @@ const quests = {
   }
 };
 
-const characters = {
+let customName = "John"
+let customHealth = 15
+let customProfile = "profile-wizard"
+let customDesc = "John has no special talents and is completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do."
+
+
+let characters = {
   1: {
     name: "Fitzgerald",
     maxHealth: 10,
@@ -141,6 +147,13 @@ const characters = {
     blurb:
       "Burgess - a powerful warrior with a strong constitution. They have no magical talent, but make up for it with overwhelming strength and a large health pool.",
   },
+  4: {
+    name: customName,
+    maxHealth: customHealth,
+    profileClass: customProfile,
+    description: customDesc,
+    blurb: "",
+  }
 };
 
 const gameState = {
@@ -871,9 +884,17 @@ function confirmQuest() {
   showElement(elements.startGame);
 }
 
+let customchar = false;
+
 // select a character (from 1 to 3)
 function selectCharacter(characterNumber, options = {}) {
-  const character = characters[characterNumber];
+  if(characterNumber == 4){
+    customchar = true;
+    customName = document.getElementById("name-input").value;
+    customHealth = document.getElementById("health-input").value;
+    customDesc = document.getElementById("desc-input").value;
+  }
+  let character = characters[characterNumber];
   if (!character) {
     console.error("[Error] There is no character " + characterNumber + ".");
     return;
@@ -890,6 +911,14 @@ function selectCharacter(characterNumber, options = {}) {
   if (options.reveal !== false) {
     showElement(elements.characterBlurb);
     showElement(elements.characterProfile);
+  }
+  if(characterNumber == 4){
+    hideElement(elements.characterBlurb);
+    showElement(document.getElementById("custom-character"));
+  }else{
+    customchar = false;
+    showElement(elements.characterBlurb);
+    hideElement(document.getElementById("custom-character"));
   }
 
   // update UI
@@ -1241,6 +1270,9 @@ function sendMessage() {
 
   if (gameState.chatHistory.length === 0) {
     inputText = "Game Start";
+    if(customchar == true){
+      selectCharacter(4);
+    }
   }
 
   const prompt = buildPrompt(inputText);

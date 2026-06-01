@@ -24,6 +24,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-size:cover;
 }
 
 a {
@@ -652,4 +653,20 @@ button:disabled {
   .character-panel-grid {
     grid-template-columns: 1fr;
   }
+}
+
+#custom-character{
+  display:grid;
+  grid-template-areas: "custname custhealth" "custdesc custdesc";
+  gap:5px;
+}
+#name-input{
+  grid-area:custname;
+}
+#health-input{
+  grid-area:custhealth;
+}
+#desc-input{
+  grid-area:custdesc;
+  padding:5px;
 }
