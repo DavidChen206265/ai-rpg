@@ -236,7 +236,7 @@ const gameState = {
 
 // state for a single ai stream
 const streamState = {
-  state: "idle", // "idle", "waitingForFirstChunk", "receivingChunks"
+  state: "idle", // "idle", "waitingForFirstChunk", "receivingChunks", "error"
   thinkingTime: 0,
   lastInputText: "",
   fullResponse: "",
@@ -336,6 +336,8 @@ let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
 let didYouKnowCounter = 0;
 const didYouKnowInterval = 30;
 
+const timeoutInterval = 180;
+
 const thinkingTimer = setInterval(() => {
   if (streamState.state === "waitingForFirstChunk") {
 
@@ -343,6 +345,14 @@ const thinkingTimer = setInterval(() => {
     streamState.thinkingTimeCounter++;
     thinkingWordsCounter++;
     didYouKnowCounter++;
+
+    // check for timeout
+    if (streamState.thinkingTimeCounter >= timeoutInterval) {
+      alert("[Error] AI response timeout. Try to load the last save.");
+      console.error("[Error] AI response timeout");
+      streamState = "idle";
+      loadActiveSave();
+    }
 
     if (thinkingWordsCounter >= thinkingWordsInterval) {
       thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
@@ -681,6 +691,7 @@ function createSaveSnapshot() {
     lastVisibleResponse: gameState.lastVisibleResponse,
     puzzleMode: gameState.puzzleMode,
     choiceTypes: gameState.choiceTypes,
+    ui: gameState.ui,
   };
 }
 
@@ -717,7 +728,11 @@ function applySaveSnapshot(snapshot = {}) {
   gameState.pendingLuckMessage = snapshot.pendingLuckMessage || "";
   gameState.lastVisibleResponse = snapshot.lastVisibleResponse || "";
   gameState.puzzleMode = snapshot.puzzleMode;
-  gameState.choiceTypes = snapshot.choiceTypes;
+  gameState.choiceTypes = snapshot.choiceTypes || gameState.choiceTypes;
+  gameState.ui = snapshot.ui || gameState.ui;
+
+  // set background
+  changeBackgroundTo(gameState.ui.backgroundImage);
 }
 
 // update the system prompt by  quest & character user selected
@@ -857,6 +872,7 @@ function selectQuest(questNumber, options = {}) {
   const quest = quests[questNumber];
   if (!quest) {
     console.error("[Error] There is no quest " + questNumber + ".");
+    alert("[Error] There is no quest " + questNumber + ".");
     return;
   }
 
@@ -897,6 +913,7 @@ function selectCharacter(characterNumber, options = {}) {
   let character = characters[characterNumber];
   if (!character) {
     console.error("[Error] There is no character " + characterNumber + ".");
+    alert("[Error] There is no character " + characterNumber + ".");
     return;
   }
 
@@ -949,6 +966,8 @@ function extractChoicePayload(responseText) {
 
   if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
     throw new Error("AI response did not include a valid choices payload.");
+    alert("[Error] AI response did not include a valid choices payload. Auto load the last save.");
+    loadActiveSave();
   }
 
   const jsonText = responseText.slice(
@@ -1120,11 +1139,15 @@ function finishAiResponse() {
       saveCurrentGame().catch((error) => {
         appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
         console.error(error.message);
+        alert("[Error] Can not save current game, load the last save.")
+        loadActiveSave();
       });
     }
   } catch (error) {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
+    alert("[Error] error in finishAiResponse")
+    loadActiveSave();
   } finally {
     resetStreamState();
   }
@@ -1178,6 +1201,7 @@ function enterGameEndState() {
   saveCurrentGame().catch((error) => {
     appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
     console.error(error.message);
+    alert("[Error] error in enterGameEndState")
   });
 }
 
@@ -1532,6 +1556,9 @@ socket.on("ai_stream", (message) => {
     appendChatHtml(`<div class="msg-ai" id="loading">${message}</div>`);
     console.error(message);
     setChoiceControlsDisabled(false);
+    streamState.state = "idle";
+    alert(message);
+    loadActiveSave();
   } else if (message.startsWith("[Chunk]")) {
     streamState.state = "receivingChunks";
     handleAiChunk(message);
@@ -1550,6 +1577,8 @@ socket.on("data_response", (message) => {
       `<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`,
     );
     console.error(message);
+    alert(message);
+    loadActiveSave();
   } else {
     // update gameState and auto save
     gameState.eventMemory.add(message);
