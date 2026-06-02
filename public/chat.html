@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI RPG - Chat</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/style.css">
   </head>
   <body>
     <main class="game-shell">
@@ -18,7 +18,7 @@
         </div>
       </header>
 
-      <section id="quest-select" class="setup-panel">
+      <div id="quest-select" class="setup-panel">
         <div class="button-grid">
           <button id="quest-1" class="option-button is-selected" type="button">
             Maze
@@ -41,9 +41,9 @@
         >
           Select Quest
         </button>
-      </section>
+      </div>
 
-      <section id="character-select" class="setup-panel is-hidden">
+      <div id="character-select" class="setup-panel is-hidden">
         <div class="button-grid">
           <button id="character-1" class="option-button" type="button">
             Fitzgerald
@@ -75,24 +75,23 @@
             <textarea id="desc-input" name="desc-input" placeholder="Character Description"></textarea>
           </div>
         </div>
-      </section>
+      </div>
 
       <button id="start-game" class="primary-action is-hidden" type="button">
         Start
       </button>
 
-      <section
+      <div
         id="health-container"
         class="health-meter is-hidden"
-        aria-label="Health"
       >
         <div id="health-fill" class="health-fill"></div>
         <div id="health-label" class="health-label">10/10</div>
-      </section>
+      </div>
 
-      <section id="chat-window" class="chat-window" aria-live="polite">
+      <div id="chat-window" class="chat-window" aria-live="polite">
         Connecting...
-      </section>
+      </div>
 
       <form id="action-form" class="action-form is-hidden">
         <button id="choice-1" class="choice-button" type="button">
@@ -109,7 +108,7 @@
           type="text"
           placeholder="Enter action"
           autocomplete="off"
-        />
+        >
         <button id="send-action" class="primary-action" type="submit">
           Send
         </button>
