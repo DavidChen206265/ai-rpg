@@ -235,7 +235,7 @@ button:disabled {
 
 #chat-actions {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   border-radius: 8px;
   margin-top: 20px;
