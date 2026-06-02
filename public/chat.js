@@ -145,10 +145,10 @@ let characters = {
       "Burgess - a powerful warrior with a strong constitution. They have no magical talent, but make up for it with overwhelming strength and a large health pool.",
   },
   4: {
-    name: "john",
+    name: "John",
     maxHealth: 15,
     profileClass: "profile-wizard",
-    description: "John has no special talents and is completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do.",
+    description: "They have no special talents and are completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do.",
     blurb: "",
   }
 };
@@ -903,9 +903,15 @@ let customchar = false;
 function selectCharacter(characterNumber, options = {}) {
   if(characterNumber == 4){
     customchar = true;
-    characters[4].name = document.getElementById("name-input").value;
-    characters[4].maxHealth = document.getElementById("health-input").value;
-    characters[4].description = document.getElementById("desc-input").value;
+    if(document.getElementById("name-input").value){
+      characters[4].name = document.getElementById("name-input").value;
+    }
+    if(document.getElementById("health-input").value){
+      characters[4].maxHealth = document.getElementById("health-input").value;
+    }
+    if(document.getElementById("desc-input").value){
+      characters[4].description = document.getElementById("desc-input").value;
+    }
   }
   let character = characters[characterNumber];
   if (!character) {
