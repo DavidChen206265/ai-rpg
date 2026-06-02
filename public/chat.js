@@ -114,10 +114,6 @@ const quests = {
   }
 };
 
-let customName = "John"
-let customHealth = 15
-let customProfile = "profile-wizard"
-let customDesc = "John has no special talents and is completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do."
 
 
 let characters = {
@@ -149,10 +145,10 @@ let characters = {
       "Burgess - a powerful warrior with a strong constitution. They have no magical talent, but make up for it with overwhelming strength and a large health pool.",
   },
   4: {
-    name: customName,
-    maxHealth: customHealth,
-    profileClass: customProfile,
-    description: customDesc,
+    name: "john",
+    maxHealth: 15,
+    profileClass: "profile-wizard",
+    description: "John has no special talents and is completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do.",
     blurb: "",
   }
 };
@@ -744,7 +740,7 @@ ${gameState.questInfo}
 
 The user is currently in room ${gameState.currentProgress}.
 
-You are a game master, running a fantasy game. The user's character is ${gameState.characterDescription} (avoid quoting the character description verbatim). Based on the previous quest information, generate a description of the room the user is currently in. Outside of the items mentioned, the user starts the adventure with no extra gear.
+You are a game master, running a fantasy game. The user's character is ${gameState.selectedCharacterName}, ${gameState.characterDescription} (avoid quoting the character description verbatim). Based on the previous quest information, generate a description of the room the user is currently in. Outside of the items mentioned, the user starts the adventure with no extra gear.
 
 ${gameState.developerMode}
 
@@ -907,10 +903,9 @@ let customchar = false;
 function selectCharacter(characterNumber, options = {}) {
   if(characterNumber == 4){
     customchar = true;
-    customName = document.getElementById("name-input").value;
-    customHealth = document.getElementById("health-input").value;
-    customDesc = document.getElementById("desc-input").value;
-    console.log("custom character selected!");
+    characters[4].name = document.getElementById("name-input").value;
+    characters[4].maxHealth = document.getElementById("health-input").value;
+    characters[4].description = document.getElementById("desc-input").value;
   }
   let character = characters[characterNumber];
   if (!character) {
@@ -927,12 +922,6 @@ function selectCharacter(characterNumber, options = {}) {
   elements.characterBlurb.textContent = character.blurb;
   elements.characterProfile.className = `character-profile ${character.profileClass}`;
 
-  if(characterNumber == 4){
-    gameState.characterDescription = customDesc;
-    gameState.selectedCharacterName = customName;
-    gameState.playerStatus.health.max = customHealth;
-    gameState.playerStatus.health.current = customHealth;
-  }
 
   if (options.reveal !== false) {
     showElement(elements.characterBlurb);
