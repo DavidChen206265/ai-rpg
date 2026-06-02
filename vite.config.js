@@ -35,6 +35,9 @@ export default defineConfig({
   plugins: [backgroundImagesApi()],
 
   server: {
+    watch: {
+      usePolling: true,
+    },
     
     proxy: {
       '/api': {

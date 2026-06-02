@@ -236,7 +236,7 @@ const gameState = {
 };
 
 // state for a single ai stream
-const streamState = {
+let streamState = {
   state: "idle", // "idle", "waitingForFirstChunk", "receivingChunks", "error"
   thinkingTime: 0,
   lastInputText: "",
