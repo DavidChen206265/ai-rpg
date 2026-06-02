@@ -108,7 +108,7 @@ const quests = {
   4: {
     name: "Free Play",
     prompt:
-      "The user is in a classic fantasy world. They will go on quests, make friends, and have a wonderful adventure. Do not update progression in the json, leave it at 0 always, even if the user moves rooms. (because of this, ignore the message saying The user is currently in room 0) This is because there is no set endpoint in this quest, simply keep generating new quests and adventures to let the user go on forever. The only way the game ends is if the user dies, or gets in some inescapable situation where the only way out is dying. It is up to you to decide the time period of the adventure, but there should be three guidelines always followed: 1. Magic is real, and there are magic schools which teach it. Magic is not taboo, and is well accepted as a profession. 2. Do not make a futuristic world, the adventure is fantasy based not sci fi based. 3. The most important thing is to make sure the user has fun. Don't make the game too easy as to get rid of any challenge, aim to make a challenging adventure that feels good to overcome.",
+      "The user is in a classic fantasy world. They will go on quests, make friends, and have a wonderful adventure. Do not update progression in the json, leave it at 0 always, even if the user moves rooms. (because of this, ignore the message saying The user is currently in room 0) This is because there is no set endpoint in this quest, simply keep generating new quests and adventures to let the user go on forever. The only way the game ends is if the user dies, or gets in some inescapable situation where the only way out is dying. It is up to you to decide the time period of the adventure, but there should be four guidelines always followed: 1. Magic is real, and there are magic schools which teach it. Magic is not taboo, and is well accepted as a profession. 2. While magic exists, there are still people who study science. Those who do call themselves Science Users, and are just as respected as those who study magic. They study in Scientific Academies, which are similar to Magic Schools but for Science instead. Mages and Science Users are not hostile to each other, they respect each other's trade, but they tend not to mix and studying both is frowned upon. Normal cities should not have both a Magic School and a Scientific Academy, only the capitol city should have both, while small towns should have neither. Science Users should not have modern scientific tools, but would have moderate knowledge of electricity, chemical reactions, biology, and physics. 3. Do not make a futuristic world, the adventure is fantasy based not sci fi based. 4. The most important thing is to make sure the user has fun. Don't make the game too easy as to get rid of any challenge, aim to make a challenging adventure that feels good to overcome.",
     blurb:
       "Free play in a fantasy world! No defined endings, just go on forever!"
   }
@@ -300,6 +300,7 @@ const thinkingDotAnimation = [
   "...",
 ];
 
+//Did you know text object
 let didYouKnowTexts = [
   "David stole Cohen's pencil. Cohen said: 'Hey, that's private!' David said: 'But we are in the same class!'",
   "Yufei's wife tells him, 'Go to the store and buy a loaf of bread. If they have eggs, buy a dozen.' Yufei comes back with 12 loaves of bread.",

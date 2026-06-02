@@ -96,6 +96,12 @@ button:disabled {
   margin: 0;
 }
 
+#game-title{
+  background-color:var(--bg);
+  border-radius:5px;
+  padding:10px;
+}
+
 #page-actions,
 #chat-actions {
   flex-wrap: wrap;
@@ -233,6 +239,11 @@ button:disabled {
   gap: 10px;
   border-radius: 8px;
   margin-top: 20px;
+}
+@media (max-width:600px){
+  #chat-actions{
+    grid-template-columns: 1fr;
+  }
 }
 
 .option-button {

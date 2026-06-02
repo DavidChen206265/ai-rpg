@@ -60,6 +60,9 @@ Character Progression: The system allows for deep customization in class and cha
 
 ## dice system: https://bg3.wiki/wiki/Dice_rolls
 
-## Potential Features:
-- Custom character creation
-- Custom quests / free play prompt
+## Required Features:
+Favicon
+Manifest and PWA support
+Character Profiles
+UI phone fix
+Code commenting???
