@@ -27,6 +27,7 @@ if (requestedSaveId) {
   localStorage.setItem(ACTIVE_SAVE_KEY, requestedSaveId);
 }
 
+// UI
 const elements = {
   authAction: document.getElementById("auth-action"),
   title: document.getElementById("game-title"),
@@ -83,6 +84,7 @@ const chatActionButtonNames = {
   gameSettings: 4,
 };
 
+// quests def
 const quests = {
   1: {
     name: "Maze",
@@ -114,8 +116,7 @@ const quests = {
   }
 };
 
-
-
+// characters def
 let characters = {
   1: {
     name: "Fitzgerald",
@@ -153,6 +154,7 @@ let characters = {
   }
 };
 
+// all variables for a single save
 const gameState = {
   chatHistory: [],
   eventMemory: new Set(),
@@ -241,10 +243,12 @@ let streamState = {
   isChoicesHidden: false,
 };
 
+// whether a save is loaded
 const pageState = {
   hasLoadedSave: false,
 };
 
+// UI helpers
 function showElement(element) {
   element.classList.remove(HIDDEN_CLASS);
 }
@@ -254,6 +258,7 @@ function hideElement(element) {
 }
 
 // thinking UI helpers
+// all thinking words
 const thinkingWords = [
   "Thinking",
   "Spelunking",
@@ -290,9 +295,9 @@ const thinkingWords = [
   "Breaking Legs",
   "Digging Pit Traps",
 ];
-let thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
+let thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length); // index for the current thinking word 
 let thinkingWordsCounter = 0;
-const thinkingWordsInterval = 15;
+const thinkingWordsInterval = 15; // s
 const thinkingDotAnimation = [
   '<span style="visibility: hidden;">...</span>',
   '.<span style="visibility: hidden;">..</span>',
@@ -300,7 +305,7 @@ const thinkingDotAnimation = [
   "...",
 ];
 
-//Did you know text object
+// all did you know texts
 let didYouKnowTexts = [
   "David stole Cohen's pencil. Cohen said: 'Hey, that's private!' David said: 'But we are in the same class!'",
   "Yufei's wife tells him, 'Go to the store and buy a loaf of bread. If they have eggs, buy a dozen.' Yufei comes back with 12 loaves of bread.",
@@ -330,12 +335,14 @@ let didYouKnowTexts = [
   "Wilde learned the hard way the difference between Jewelweed and Poison Ivy",
   "Fitzgerald won the 10th annual Battle of the Books in magic school, granting him the honorary title of the Book Slayer 10.",
 ];
-let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
+let didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length); // current did you know text's index
 let didYouKnowCounter = 0;
-const didYouKnowInterval = 30;
+const didYouKnowInterval = 30; // s
 
-const timeoutInterval = 180;
+// check for AI reply timeout
+const timeoutInterval = 120; // s
 
+// main timer, count every 1s
 const thinkingTimer = setInterval(() => {
   if (streamState.state === "waitingForFirstChunk") {
 
@@ -352,17 +359,21 @@ const thinkingTimer = setInterval(() => {
       loadActiveSave();
     }
 
+    // update thinking word
     if (thinkingWordsCounter >= thinkingWordsInterval) {
       thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
       thinkingWordsCounter = 0;
     }
 
+    // update did you know text
     if (didYouKnowCounter >= didYouKnowInterval) {
       didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
       didYouKnowCounter = 0;
     }
 
   } else {
+
+    // reset all counters if it is not under the waiting UI
     streamState.thinkingTimeCounter = 0;
     thinkingWordsIndex = Math.floor(Math.random() * thinkingWords.length);
     thinkingWordsCounter = 0;
@@ -371,7 +382,9 @@ const thinkingTimer = setInterval(() => {
   }
 }, 1000);
 
-const UI_UPDATE_INTERVAL = 250;
+const UI_UPDATE_INTERVAL = 250; // ms
+
+// UI update timer
 const uiUpdateTimer = setInterval(() => {
   if (streamState.state === "waitingForFirstChunk") {
 
@@ -391,6 +404,7 @@ const uiUpdateTimer = setInterval(() => {
 
 // set select button
 function setSelectedButton(buttons, selectedIndex) {
+
   // unselect all buttons when index is -1
   if (selectedIndex === -1) {
     buttons.forEach((button, index) => {
@@ -404,10 +418,12 @@ function setSelectedButton(buttons, selectedIndex) {
   });
 }
 
+// return whether an element is selected
 function isSelected(element) {
   return element.classList.contains(SELECTED_CLASS);
 }
 
+// disable the choices and send button if it is not a legal time to send a request
 function setChoiceControlsDisabled(isDisabled) {
   choiceButtons.forEach((button) => {
     button.disabled = isDisabled;
@@ -415,6 +431,7 @@ function setChoiceControlsDisabled(isDisabled) {
   elements.sendAction.disabled = isDisabled;
 }
 
+// show choices
 function renderChoices() {
   choiceButtons.forEach((button, index) => {
     button.textContent = gameState.choices[index] || `Choice ${index + 1}`;
@@ -484,6 +501,7 @@ function getNestedValue(data, path) {
   }, data);
 }
 
+// character panel display helpers
 function renderCharacterPanelDetail(label, value) {
   return `
     <div class="character-panel-detail">
@@ -505,10 +523,10 @@ function renderCharacterPanelItem(key, item, config) {
       <h4>${escapeHtml(title)}</h4>
       <dl>
         ${config.fields
-          .map(({ label, path }) =>
-            renderCharacterPanelDetail(label, getNestedValue(safeItem, path)),
-          )
-          .join("")}
+      .map(({ label, path }) =>
+        renderCharacterPanelDetail(label, getNestedValue(safeItem, path)),
+      )
+      .join("")}
       </dl>
     </article>
   `;
@@ -524,13 +542,12 @@ function renderCharacterPanelListSection(title, data, config) {
         <span class="character-panel-count">${entries.length}</span>
       </summary>
       <div class="character-panel-list" role="list">
-        ${
-          entries.length
-            ? entries
-                .map(([key, item]) => renderCharacterPanelItem(key, item, config))
-                .join("")
-            : `<p class="character-panel-empty">${escapeHtml(config.emptyText)}</p>`
-        }
+        ${entries.length
+      ? entries
+        .map(([key, item]) => renderCharacterPanelItem(key, item, config))
+        .join("")
+      : `<p class="character-panel-empty">${escapeHtml(config.emptyText)}</p>`
+    }
       </div>
     </details>
   `;
@@ -550,6 +567,7 @@ function renderCharacterStatus(status) {
   `;
 }
 
+// get selected character's data
 function getSelectedCharacter() {
   return (
     Object.values(characters).find(
@@ -577,58 +595,58 @@ function renderCharacterPanel() {
 
       <div class="character-panel-grid">
         ${renderCharacterPanelListSection("Status Modifiers", status.modifiers, {
-          itemLabel: "Modifier",
-          emptyText: "No active modifiers.",
-          fields: [
-            { label: "Duration", path: "duration" },
-            { label: "Effect", path: "modify" },
-          ],
-        })}
+    itemLabel: "Modifier",
+    emptyText: "No active modifiers.",
+    fields: [
+      { label: "Duration", path: "duration" },
+      { label: "Effect", path: "modify" },
+    ],
+  })}
         ${renderCharacterPanelListSection("Inventory", gameState.inventory, {
-          itemLabel: "Item",
-          titleField: "name",
-          emptyText: "No inventory items.",
-          fields: [
-            { label: "Count", path: "number" },
-            { label: "Description", path: "description" },
-            { label: "Effect", path: "modify" },
-          ],
-        })}
+    itemLabel: "Item",
+    titleField: "name",
+    emptyText: "No inventory items.",
+    fields: [
+      { label: "Count", path: "number" },
+      { label: "Description", path: "description" },
+      { label: "Effect", path: "modify" },
+    ],
+  })}
         ${renderCharacterPanelListSection("Relationships", gameState.relationships, {
-          itemLabel: "Relationship",
-          titleField: "name",
-          emptyText: "No relationships.",
-          fields: [
-            { label: "Description", path: "description" },
-            { label: "Relationship", path: "relationship" },
-          ],
-        })}
+    itemLabel: "Relationship",
+    titleField: "name",
+    emptyText: "No relationships.",
+    fields: [
+      { label: "Description", path: "description" },
+      { label: "Relationship", path: "relationship" },
+    ],
+  })}
         ${renderCharacterPanelListSection("Skills", gameState.skills, {
-          itemLabel: "Skill",
-          titleField: "name",
-          emptyText: "No skills.",
-          fields: [
-            { label: "Description", path: "description" },
-            { label: "Trigger", path: "modifier.trigger" },
-            { label: "Effect", path: "modifier.modify" },
-          ],
-        })}
+    itemLabel: "Skill",
+    titleField: "name",
+    emptyText: "No skills.",
+    fields: [
+      { label: "Description", path: "description" },
+      { label: "Trigger", path: "modifier.trigger" },
+      { label: "Effect", path: "modifier.modify" },
+    ],
+  })}
         ${renderCharacterPanelListSection("Achievements", gameState.achievements, {
-          itemLabel: "Achievement",
-          titleField: "name",
-          emptyText: "No achievements.",
-          fields: [
-            { label: "Achieved", path: "isAchieved" },
-            { label: "Trigger", path: "trigger" },
-            { label: "Reward", path: "reward" },
-          ],
-        })}
+    itemLabel: "Achievement",
+    titleField: "name",
+    emptyText: "No achievements.",
+    fields: [
+      { label: "Achieved", path: "isAchieved" },
+      { label: "Trigger", path: "trigger" },
+      { label: "Reward", path: "reward" },
+    ],
+  })}
       </div>
     </div>
   `;
 }
 
-// logout button
+// remove the current save 
 function clearSession() {
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_USER_KEY);
@@ -637,6 +655,7 @@ function clearSession() {
   window.location.href = "/login.html";
 }
 
+// render logout button
 function renderAuthAction() {
   if (!gameState.token) return;
 
@@ -902,15 +921,15 @@ let customchar = false;
 
 // select a character (from 1 to 3)
 function selectCharacter(characterNumber, options = {}) {
-  if(characterNumber == 4){
+  if (characterNumber == 4) {
     customchar = true;
-    if(document.getElementById("name-input").value){
+    if (document.getElementById("name-input").value) {
       characters[4].name = document.getElementById("name-input").value;
     }
-    if(document.getElementById("health-input").value){
+    if (document.getElementById("health-input").value) {
       characters[4].maxHealth = document.getElementById("health-input").value;
     }
-    if(document.getElementById("desc-input").value){
+    if (document.getElementById("desc-input").value) {
       characters[4].description = document.getElementById("desc-input").value;
     }
   }
@@ -934,10 +953,10 @@ function selectCharacter(characterNumber, options = {}) {
     showElement(elements.characterBlurb);
     showElement(elements.characterProfile);
   }
-  if(characterNumber == 4){
+  if (characterNumber == 4) {
     hideElement(elements.characterBlurb);
     showElement(document.getElementById("custom-character"));
-  }else{
+  } else {
     customchar = false;
     showElement(elements.characterBlurb);
     hideElement(document.getElementById("custom-character"));
@@ -1023,12 +1042,12 @@ function updateChoices(responseText) {
   }
 
   // check for puzzle mode
-  if (gameState.puzzleMode == false){
+  if (gameState.puzzleMode == false) {
     document.getElementById("choice-1").style.display = "inline-block";
     document.getElementById("choice-2").style.display = "inline-block";
     document.getElementById("choice-3").style.display = "inline-block";
   }
-  if (gameState.puzzleMode == true){
+  if (gameState.puzzleMode == true) {
     document.getElementById("choice-1").style.display = "none";
     document.getElementById("choice-2").style.display = "none";
     document.getElementById("choice-3").style.display = "none";
@@ -1300,11 +1319,12 @@ function sendMessage() {
 
   if (gameState.chatHistory.length === 0) {
     inputText = "Game Start";
-    if(customchar == true){
+    if (customchar == true) {
       selectCharacter(4);
     }
   }
 
+  // build the prompt
   const prompt = buildPrompt(inputText);
   appendChatHtml(
     `<div class="msg-user"><strong>You:</strong> ${inputText}</div>`,
@@ -1543,6 +1563,8 @@ function changeBackgroundTo(img) {
 }
 
 socket.on("connect", () => {
+
+  // check for loaded save
   if (
     !pageState.hasLoadedSave &&
     elements.chatWindow.textContent.trim() === "Connecting..."
@@ -1554,25 +1576,45 @@ socket.on("connect", () => {
 // handle main AI response
 socket.on("ai_stream", (message) => {
   if (message === "start") {
+
+    // set waiting UI
     setChatHtml(
       `<div class="msg-user"><strong>You:</strong> ${streamState.lastInputText}</div>\n\n<div class="msg-ai"><strong>AI:</strong> Thinking...</div>`,
     );
+
+    // update streamState
     streamState.state = "waitingForFirstChunk";
+
   } else if (message.startsWith("[Error]")) {
-    appendChatHtml(`<div class="msg-ai" id="loading">${message}</div>`);
+
+    // show error
     console.error(message);
-    setChoiceControlsDisabled(false);
-    streamState.state = "idle";
     alert(message);
+
+    // update UI
+    appendChatHtml(`<div class="msg-ai" id="loading">${message}</div>`);
+    setChoiceControlsDisabled(false);
+
+    // update streamState
+    streamState.state = "idle";
+
+    // try to load the last valid save
     loadActiveSave();
+
   } else if (message.startsWith("[Chunk]")) {
+
+    // handle AI response chunks
     streamState.state = "receivingChunks";
     handleAiChunk(message);
+
   } else if (message === "end") {
+
+    // finish the main AI response
     streamState.state = "idle";
     finishAiResponse();
   }
 
+  // scroll the chat window
   elements.chatWindow.scrollTo({ top: 0, behavior: "auto" });
 });
 
