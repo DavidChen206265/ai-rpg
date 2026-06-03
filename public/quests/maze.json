@@ -33,13 +33,9 @@
     }
   },
   "info": {
-    "infoNameExample1": {
-      "triggers": ["trigger1", "trigger2", "trigger3"],
-      "content": ""
-    },
-    "infoNameExample2": {
-      "triggers": ["trigger1", "trigger2", "trigger3"],
-      "content": ""
+    "David": {
+      "triggers": ["David", "david", "owner"],
+      "content": "David is the owner of this maze. Once someone in the maze finds this fact, David will send a zombie to kill them."
     }
   }
 }
