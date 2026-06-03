@@ -184,14 +184,14 @@ const gameState = {
     }
   },
   relationships: {
-    0: {
+    "0": {
       name: "character's name (not player's)",
       description: "character's description",
       relationship: "relationship's description",
     },
   },
   skills: {
-    0: {
+    "0": {
       name: "skill's name",
       description: "skill's description",
       modifier: {
@@ -201,7 +201,7 @@ const gameState = {
     },
   },
   inventory: {
-    0: {
+    "0": {
       name: "",
       number: 1,
       description: "item's background and usages' short description",
@@ -209,7 +209,7 @@ const gameState = {
     },
   },
   achievements: {
-    0: {
+    "0": {
       name: "",
       isAchieved: false,
       trigger: "",
@@ -773,7 +773,7 @@ e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [ac
 
 JSON update instructions:
 1. turn gameOver to true if playerStatus.health.current <= 0, but set it to 0 since health can not be less than 0; current health must <= max health.
-2. in playerStatus(except playerStatus.modifiers), achievements and ui, you can only edit the value of existing fields, must not add / delete fields;
+2. in playerStatus(except playerStatus.modifiers), achievements and ui, you can only edit the value of existing fields, must not add / delete fields(e.g. make up achievements that are not predefined by the quest);
 3. in relationships, you can only add new relationships / edit exiting ones but must not delete any of them;
 4. in playerStatus.modifiers, skills, inventory, you can add / edit / delete fields;
 5. you must maintain the format for each field;
@@ -1344,6 +1344,11 @@ function sendMessage() {
 
   // update stream state
   streamState.state = "waitingForFirstChunk";
+}
+
+// add worldInfo into prompt
+function triggerWorldInfo (request) {
+  
 }
 
 // apply choice and auto send to server
