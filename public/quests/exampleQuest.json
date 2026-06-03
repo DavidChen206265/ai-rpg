@@ -1,0 +1,45 @@
+{
+  "name": "Example Quest",
+  "prompt": "The prompt that will be sent to AI every single conversation.",
+  "blurb": "",
+  "relationships": {
+    "relationshipNameExample1": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    },
+    "relationshipNameExample2": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    }
+  },
+  "achievements": {
+    "achievementNameExample1": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    },
+    "achievementNameExample2": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    }
+  },
+  "info": {
+    "infoNameExample1": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    },
+    "infoNameExample2": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    }
+  }
+}

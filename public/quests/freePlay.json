@@ -1,0 +1,45 @@
+{
+  "name": "Free Play",
+  "prompt": "The user is in a classic fantasy world. They will go on quests, make friends, and have a wonderful adventure. Do not update progression in the json, leave it at 0 always, even if the user moves rooms. (because of this, ignore the message saying The user is currently in room 0) This is because there is no set endpoint in this quest, simply keep generating new quests and adventures to let the user go on forever. The only way the game ends is if the user dies, or gets in some inescapable situation where the only way out is dying. It is up to you to decide the time period of the adventure, but make sure to follow the four rules of quest generation extra closely for this quest.",
+  "blurb": "Free play in a fantasy world! No defined endings, just go on forever!",
+  "relationships": {
+    "relationshipNameExample1": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    },
+    "relationshipNameExample2": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    }
+  },
+  "achievements": {
+    "achievementNameExample1": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    },
+    "achievementNameExample2": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    }
+  },
+  "info": {
+    "infoNameExample1": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    },
+    "infoNameExample2": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    }
+  }
+}

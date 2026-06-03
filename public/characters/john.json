@@ -1,0 +1,58 @@
+{
+  "name": "John",
+  "profileClass": "profile-wizard",
+  "description": "They have no special talents and are completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do.",
+  "blurb": "",
+  "playerStatus": {
+    "health": {
+      "current": 15,
+      "max": 15
+    },
+    "mana": {
+      "current": 15,
+      "max": 15
+    },
+    "strength": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "magic": 5,
+    "modifiers": {
+      "slow": {
+        "duration": "5 hours",
+        "modify": "agility - 3"
+      }
+    }
+  },
+  "skills": {
+    "SkillNameExample1": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    },
+    "SkillNameExample2": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    }
+  },
+  "inventory": {
+    "ItemNameExample1": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    },
+    "ItemNameExample2": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    }
+  }
+}

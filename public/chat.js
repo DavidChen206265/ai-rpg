@@ -83,152 +83,188 @@ const chatActionButtonNames = {
 };
 
 // quests def
-const quests = {
-  1: {
-    name: "Maze",
-    prompt:
-      "The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before they can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry enemy who will fight the user. When the user enters the center of the maze after room 4 they have won and the game is over.",
-    blurb:
-      "Adventure into the depths of a magical maze to claim the treasures within, defeating enemies and evading traps on the way.",
-  },
-  2: {
-    name: "Ninja Office",
-    prompt:
-      "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. FOR THIS QUEST AND THIS QUEST ALONE, THE ADVENTURE IS SET IN PRESENT DAY, WITH MODERN TECHNOLOGY. THIS IS NOT SHOCKING TO THE CHARACTERS, AND THEY UNDERSTAND EVERYTHING PERFECTLY WELL BECAUSE THEY ARE ALSO FROM MODERN DAY IN THIS ONE QUEST. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones) (The weapon or skill the ninja is a master at shouldn't be directly told to the player immediately, it should only be revealed when the ninja actually uses their weapon or ability. Subtle clues are allowed however, like the throwing knife scissors ninja holding suspiciously sharp scissors, but it shouldn't be said immediately that they are throwing knives unless the ninja uses them as such). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the building are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
-    blurb:
-      "Infiltrate and take out the leader of a band of office ninjas in their corporate headquarters.",
-  },
-  3: {
-    name: "Timelost Castle",
-    prompt:
-      "The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have roman / greek era puzzles and monsters, then the late middle rooms (rooms 5-6) have victorian puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The appearance of the mad mage is that of a tan-skinned elf with wavy light silver hair and violet iris's, with fine purple medevial clothes.  The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. When the mad mage is defeated, the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is defeated, the user wins the game.",
-    blurb:
-      "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
-  },
-  4: {
-    name: "Free Play",
-    prompt:
-      "The user is in a classic fantasy world. They will go on quests, make friends, and have a wonderful adventure. Do not update progression in the json, leave it at 0 always, even if the user moves rooms. (because of this, ignore the message saying The user is currently in room 0) This is because there is no set endpoint in this quest, simply keep generating new quests and adventures to let the user go on forever. The only way the game ends is if the user dies, or gets in some inescapable situation where the only way out is dying. It is up to you to decide the time period of the adventure, but make sure to follow the four rules of quest generation extra closely for this quest.",
-    blurb:
-      "Free play in a fantasy world! No defined endings, just go on forever!"
-  }
+// load quest definitions from standard quest files in public/quests/
+const QUEST_FILES = {
+  1: "/quests/maze.json",
+  2: "/quests/ninjaOffice.json",
+  3: "/quests/timelostCastle.json",
+  4: "/quests/freePlay.json",
 };
 
+async function loadQuests() {
+  const loaded = {};
+  await Promise.all(
+    Object.entries(QUEST_FILES).map(async ([key, file]) => {
+      const response = await fetch(file);
+      if (!response.ok) {
+        throw new Error(`Failed to load quest file ${file}: HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      loaded[key] = {
+        name: data.name,
+        prompt: data.prompt,
+        blurb: data.blurb,
+        relationships: data.relationships,
+        achievements: data.achievements,
+        info: data.info
+      };
+    }),
+  );
+  return loaded;
+}
+
+const quests = await loadQuests();
+
 // characters def
-let characters = {
-  1: {
-    name: "Fitzgerald",
-    maxHealth: 10,
-    profileClass: "profile-wizard",
-    description:
-      "Fitzgerald, an aspiring wizard, and magic school graduate. They have great knowledge of most magic, and tend to use magic instead of physical acts. They can cast most magic, but high level spells drain their energy, so they are used sparingly. While they aren't old, they don't have much defense or stamina, and are not well suited for strength based activity. Their magical prowess makes up for their lack of strength however. They have 10 hit points total. They start with their custom tailored wizard robes, their spellbook, and an emergency mana potion stashed in their pointy hat.",
-    blurb:
-      "Fitzgerald - an aspiring wizard with great prowess in the magical arts. They are physically frail and have the lowest maximum health.",
-  },
-  2: {
-    name: "Wilde",
-    maxHealth: 15,
-    profileClass: "profile-ranger",
-    description:
-      "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total. They start with light leather armor, a bow, arrows, and a small dagger in their boot.",
-    blurb:
-      "Wilde - a nature-loving ranger. They are acrobatic and nimble, and can cast simple nature spells to coax plants and animals to aid them.",
-  },
-  3: {
-    name: "Burgess",
-    maxHealth: 25,
-    profileClass: "profile-warrior",
-    description:
-      "Burgess, a strong warrior. They are very strong, and well trained in all manner of close combat. They have high defense and stamina, and are very well suited to feats of strength. They are also somewhat nimble, but lack the ability for major acrobatic movements. However, they have a complete and utter lack of magic, being completely incapable under any circumstances to cast even the simplest of spells. They can still use potions and magical items, but cannot cast any magic on their own at all. They have 25 hit points total. They start with sturdy chainmail armor, a battleaxe, and brass knuckles.",
-    blurb:
-      "Burgess - a powerful warrior with a strong constitution. They have no magical talent, but make up for it with overwhelming strength and a large health pool.",
-  },
-  4: {
-    name: "John",
-    maxHealth: 15,
-    profileClass: "profile-wizard",
-    description: "They have no special talents and are completely average. They have no starting equipment, nothing special about their appearance, and are completely middling at everything they do.",
-    blurb: "",
-  }
+// load character definitions from standard character files in public/characters/
+const CHARACTER_FILES = {
+  1: "/characters/fitzgerald.json",
+  2: "/characters/wilde.json",
+  3: "/characters/burgess.json",
+  4: "/characters/john.json",
 };
+
+async function loadCharacters() {
+  const loaded = {};
+  await Promise.all(
+    Object.entries(CHARACTER_FILES).map(async ([key, file]) => {
+      const response = await fetch(file);
+      if (!response.ok) {
+        throw new Error(`Failed to load character file ${file}: HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      loaded[key] = {
+        name: data.name,
+        profileClass: data.profileClass,
+        description: data.description,
+        blurb: data.blurb,
+        playerStatus: data.playerStatus,
+        skills: data.skills,
+        inventory: data.inventory
+      };
+    }),
+  );
+  return loaded;
+}
+
+let characters = await loadCharacters();
 
 // all variables for a single save
 const gameState = {
-  chatHistory: [],
-  eventMemory: new Set(),
-  systemPrompt: "",
-  questInfo: quests[1].prompt,
-  characterDescription: characters[2].description,
-  developerMode: "",
-  puzzleMode: false,
-  isGameOver: false,
-  currentProgress: 1,
-  playerStatus: {
-    health: {
-      current: 8,
-      max: 10,
+  "chatHistory": [],
+  "eventMemory": new Set(),
+  "systemPrompt": "",
+  "questInfo": quests[1].prompt,
+  "characterDescription": characters[2].description,
+  "developerMode": "",
+  "puzzleMode": false,
+  "isGameOver": false,
+  "currentProgress": 1,
+  "playerStatus": {
+    "health": {
+      "current": 10,
+      "max": 10
     },
-    mana: {
-      current: 12,
-      max: 15,
+    "mana": {
+      "current": 15,
+      "max": 15
     },
-    strength: 5,
-    agility: 5,
-    intelligence: 5,
-    magic: 5,
-    modifiers: {
-      slow: {
-        duration: "5 hours",
-        modify: "agility - 3"
-      },
+    "strength": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "magic": 5,
+    "modifiers": {
+      "slow": {
+        "duration": "5 hours",
+        "modify": "agility - 3"
+      }
     }
   },
-  relationships: {
-    0: {
-      name: "character's name (not player's)",
-      description: "character's description",
-      relationship: "relationship's description",
+  "skills": {
+    "SkillNameExample1": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
     },
+    "SkillNameExample2": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    }
   },
-  skills: {
-    0: {
-      name: "skill's name",
-      description: "skill's description",
-      modifier: {
-        trigger: "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        modify: "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow",
-      },
+  "inventory": {
+    "ItemNameExample1": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
     },
+    "ItemNameExample2": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    }
   },
-  inventory: {
-    0: {
-      name: "",
-      number: 1,
-      description: "item's background and usages' short description",
-      modify: "",
+  "relationships": {
+    "relationshipNameExample1": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
     },
+    "relationshipNameExample2": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    }
   },
-  achievements: {
-    0: {
-      name: "",
-      isAchieved: false,
-      trigger: "",
-      reward: "",
+  "achievements": {
+    "achievementNameExample1": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
     },
+    "achievementNameExample2": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    }
   },
-  ui: {
-    backgroundImage: "lake.jpg",
+  "info": {
+    "infoNameExample1": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    },
+    "infoNameExample2": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    }
   },
-  selectedQuestName: quests[1].name,
-  selectedCharacterName: characters[2].name,
-  choiceDifficulties: [10, 10, 10],
-  choiceTypes: ["strength", "strength", "strength"],
-  pendingLuckMessage: "",
-  choices: ["Choice one", "Choice two", "Choice three"],
-  lastVisibleResponse: "",
-  saveId: requestedSaveId || localStorage.getItem(ACTIVE_SAVE_KEY) || "",
-  saveTitle: localStorage.getItem(ACTIVE_SAVE_TITLE_KEY) || "Untitled Save",
-  token: localStorage.getItem(AUTH_TOKEN_KEY) || "",
+  "ui": {
+    "backgroundImage": "lake.jpg",
+  },
+  "selectedQuestName": quests[1].name,
+  "selectedCharacterName": characters[2].name,
+  "choiceDifficulties": [10, 10, 10],
+  "choiceTypes": ["strength", "strength", "strength"],
+  "pendingLuckMessage": "",
+  "choices": ["Choice one", "Choice two", "Choice three"],
+  "lastVisibleResponse": "",
+  "saveId": requestedSaveId || localStorage.getItem(ACTIVE_SAVE_KEY) || "",
+  "saveTitle": localStorage.getItem(ACTIVE_SAVE_TITLE_KEY) || "Untitled Save",
+  "token": localStorage.getItem(AUTH_TOKEN_KEY) || "",
 };
 
 // state for a single ai stream
@@ -692,9 +728,10 @@ function createSaveSnapshot() {
     developerMode: gameState.developerMode,
     isGameOver: gameState.isGameOver,
     playerStatus: gameState.playerStatus,
-    relationships: gameState.relationships,
     skills: gameState.skills,
     inventory: gameState.inventory,
+    relationships: gameState.relationships,
+    info: gameState.info,
     achievements: gameState.achievements,
     currentProgress: gameState.currentProgress,
     selectedQuestName: gameState.selectedQuestName,
@@ -773,7 +810,7 @@ e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [ac
 
 JSON update instructions:
 1. turn gameOver to true if playerStatus.health.current <= 0, but set it to 0 since health can not be less than 0; current health must <= max health.
-2. in playerStatus(except playerStatus.modifiers), achievements and ui, you can only edit the value of existing fields, must not add / delete fields;
+2. in playerStatus(except playerStatus.modifiers), achievements and ui, you can only edit the value of existing fields, must not add / delete fields(e.g. make up achievements that are not predefined by the quest);
 3. in relationships, you can only add new relationships / edit exiting ones but must not delete any of them;
 4. in playerStatus.modifiers, skills, inventory, you can add / edit / delete fields;
 5. you must maintain the format for each field;
@@ -801,61 +838,88 @@ JSON format:
   "choice3type": "strength",
   "puzzleMode": false,
   "gameOver": false,
-  "healthLost": 0,
-  "healthGained": 0,
   "progression": 0
   "playerStatus": {
     "health": {
-      "current": 8,
-      "max": 10,
+      "current": 10,
+      "max": 10
     },
     "mana": {
-      "current": 12,
-      "max": 15,
+      "current": 15,
+      "max": 15
     },
-    "strength": 0,
-    "agility": 0,
-    "intelligence": 0,
-    "magic": 0,
+    "strength": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "magic": 5,
     "modifiers": {
       "slow": {
         "duration": "5 hours",
         "modify": "agility - 3"
-      },
+      }
     }
   },
-  "relationships": {
-    "characterBriefName0": {
-      "name": "character's full name (not player's)",
-      "description": "character's description",
-      "relationship": "relationship's description",
-    }, 
-  },
   "skills": {
-    "skillBriefName0": {
-      "name": "skill's full name",
+    "SkillNameExample1": {
+      "name": "skill's display name",
       "description": "skill's description",
       "modifier": {
         "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow",
-      },
-    }, 
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    },
+    "SkillNameExample2": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    }
   },
   "inventory": {
-    "itemBriefName0": {
-      "name": "item's full name",
+    "ItemNameExample1": {
+      "name": "item's display name",
       "number": 1,
       "description": "item's background and usages' short description",
-      "modify": "",
+      "modify": "e.g. intelligence + 1"
     },
+    "ItemNameExample2": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    }
+  },
+  "relationships": {
+    "relationshipNameExample1": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    },
+    "relationshipNameExample2": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    }
   },
   "achievements": {
-    "achievementBriefName": {
-      "name": "",
+    "achievementNameExample1": {
+      "name": "display name for this achievement",
       "isAchieved": false,
-      "trigger": "",
-      "reward": "",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
     },
+    "achievementNameExample2": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    }
   },
   "ui": {
     "backgroundImage": "lake.jpg",
@@ -896,7 +960,8 @@ function selectQuest(questNumber, options = {}) {
   // update gameState
   gameState.questInfo = quest.prompt;
   gameState.selectedQuestName = quest.name;
-
+  gameState.relationships = quest.relationships;
+  gameState.achievements = quest.achievements;
   elements.questBlurb.textContent = quest.blurb;
 
   if (options.reveal !== false) {
@@ -917,17 +982,20 @@ function confirmQuest() {
   showElement(elements.startGame);
 }
 
-let customchar = false;
+let isCustomCharacter = false;
 
 // select a character (from 1 to 3)
 function selectCharacter(characterNumber, options = {}) {
+
+  // custom character
   if (characterNumber == 4) {
-    customchar = true;
+    isCustomCharacter = true;
     if (document.getElementById("name-input").value) {
       characters[4].name = document.getElementById("name-input").value;
     }
     if (document.getElementById("health-input").value) {
-      characters[4].maxHealth = document.getElementById("health-input").value;
+      characters[4].playerStatus.health.max = document.getElementById("health-input").value;
+      characters[4].playerStatus.health.current = document.getElementById("health-input").value;
     }
     if (document.getElementById("desc-input").value) {
       characters[4].description = document.getElementById("desc-input").value;
@@ -943,8 +1011,9 @@ function selectCharacter(characterNumber, options = {}) {
   // update gameState
   gameState.characterDescription = character.description;
   gameState.selectedCharacterName = character.name;
-  gameState.playerStatus.health.max = character.maxHealth;
-  gameState.playerStatus.health.current = character.maxHealth;
+  gameState.playerStatus = character.playerStatus;
+  gameState.skills = character.skills;
+  gameState.inventory = character.inventory;
   elements.characterBlurb.textContent = character.blurb;
   elements.characterProfile.className = `character-profile ${character.profileClass}`;
 
@@ -957,7 +1026,7 @@ function selectCharacter(characterNumber, options = {}) {
     hideElement(elements.characterBlurb);
     showElement(document.getElementById("custom-character"));
   } else {
-    customchar = false;
+    isCustomCharacter = false;
     showElement(elements.characterBlurb);
     hideElement(document.getElementById("custom-character"));
     console.log("custom character deselected!");
@@ -1319,7 +1388,7 @@ function sendMessage() {
 
   if (gameState.chatHistory.length === 0) {
     inputText = "Game Start";
-    if (customchar == true) {
+    if (isCustomCharacter == true) {
       selectCharacter(4);
     }
   }
@@ -1344,6 +1413,11 @@ function sendMessage() {
 
   // update stream state
   streamState.state = "waitingForFirstChunk";
+}
+
+// add worldInfo into prompt
+function triggerWorldInfo (request) {
+  
 }
 
 // apply choice and auto send to server

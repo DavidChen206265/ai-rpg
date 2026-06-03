@@ -1,0 +1,45 @@
+{
+  "name": "Maze",
+  "prompt": "The user is in a magical maze, trying to reach the center. The user must progress through at least 4 rooms before they can reach the center. Of these rooms, one must have a treasure chest sealed by vines, and one must have an angry enemy who will fight the user. When the user enters the center of the maze after room 4 they have won and the game is over.",
+  "blurb": "Adventure into the depths of a magical maze to claim the treasures within, defeating enemies and evading traps on the way.",
+  "relationships": {
+    "relationshipNameExample1": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    },
+    "relationshipNameExample2": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    }
+  },
+  "achievements": {
+    "achievementNameExample1": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    },
+    "achievementNameExample2": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    }
+  },
+  "info": {
+    "infoNameExample1": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    },
+    "infoNameExample2": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    }
+  }
+}

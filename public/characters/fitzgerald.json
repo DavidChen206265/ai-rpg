@@ -1,0 +1,58 @@
+{
+  "name": "Fitzgerald",
+  "profileClass": "profile-wizard",
+  "description": "Fitzgerald, an aspiring wizard, and magic school graduate. They have great knowledge of most magic, and tend to use magic instead of physical acts. They can cast most magic, but high level spells drain their energy, so they are used sparingly. While they aren't old, they don't have much defense or stamina, and are not well suited for strength based activity. Their magical prowess makes up for their lack of strength however. They have 10 hit points total. They start with their custom tailored wizard robes, their spellbook, and an emergency mana potion stashed in their pointy hat.",
+  "blurb": "Fitzgerald - an aspiring wizard with great prowess in the magical arts. They are physically frail and have the lowest maximum health.",
+  "playerStatus": {
+    "health": {
+      "current": 10,
+      "max": 10
+    },
+    "mana": {
+      "current": 15,
+      "max": 15
+    },
+    "strength": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "magic": 5,
+    "modifiers": {
+      "slow": {
+        "duration": "5 hours",
+        "modify": "agility - 3"
+      }
+    }
+  },
+  "skills": {
+    "SkillNameExample1": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    },
+    "SkillNameExample2": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    }
+  },
+  "inventory": {
+    "ItemNameExample1": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    },
+    "ItemNameExample2": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    }
+  }
+}
