@@ -73,7 +73,6 @@ const chatActionButtons = [
   document.getElementById("show-chat-history"),
   document.getElementById("character-panel"),
   document.getElementById("world-info"),
-  document.getElementById("game-settings"),
 ];
 
 const chatActionButtonNames = {
@@ -81,7 +80,6 @@ const chatActionButtonNames = {
   showChatHistory: 1,
   characterPanel: 2,
   worldInfo: 3,
-  gameSettings: 4,
 };
 
 // quests def

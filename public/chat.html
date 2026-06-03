@@ -1,138 +1,119 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI RPG - Chat</title>
-    <link rel="stylesheet" href="/style.css">
-  </head>
-  <body>
-    <main class="game-shell">
-      <header class="game-header">
-        <h1 id="game-title">AI Fantasy Adventure</h1>
-        <div id="page-actions">
-          <a class="button-link" href="/">Home</a>
-          <a id="auth-action" class="button-link" href="/login.html"
-            >Login / Register</a
-          >
-        </div>
-      </header>
 
-      <div id="quest-select" class="setup-panel">
-        <div class="button-grid">
-          <button id="quest-1" class="option-button is-selected" type="button">
-            Maze
-          </button>
-          <button id="quest-2" class="option-button" type="button">
-            Ninja Office
-          </button>
-          <button id="quest-3" class="option-button" type="button">
-            Timelost Castle
-          </button>
-          <button id="free-play" class="option-button" type="button">
-            Free Play
-          </button>
-        </div>
-        <p id="quest-blurb" class="selection-copy is-hidden">WIP</p>
-        <button
-          id="confirm-quest"
-          class="primary-action is-hidden"
-          type="button"
-        >
-          Select Quest
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI RPG - Chat</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+  <main class="game-shell">
+    <header class="game-header">
+      <h1 id="game-title">AI Fantasy Adventure</h1>
+      <div id="page-actions">
+        <a class="button-link" href="/">Home</a>
+        <a id="auth-action" class="button-link" href="/login.html">Login / Register</a>
+      </div>
+    </header>
+
+    <div id="quest-select" class="setup-panel">
+      <div class="button-grid">
+        <button id="quest-1" class="option-button is-selected" type="button">
+          Maze
+        </button>
+        <button id="quest-2" class="option-button" type="button">
+          Ninja Office
+        </button>
+        <button id="quest-3" class="option-button" type="button">
+          Timelost Castle
+        </button>
+        <button id="free-play" class="option-button" type="button">
+          Free Play
         </button>
       </div>
-
-      <div id="character-select" class="setup-panel is-hidden">
-        <div class="button-grid">
-          <button id="character-1" class="option-button" type="button">
-            Fitzgerald
-          </button>
-          <button
-            id="character-2"
-            class="option-button is-selected"
-            type="button"
-          >
-            Wilde
-          </button>
-          <button id="character-3" class="option-button" type="button">
-            Burgess
-          </button>
-          <button id="character-4" class="option-button" type="button">
-            Custom
-          </button>
-        </div>
-        <div class="character-details">
-          <div
-            id="character-profile"
-            class="character-profile is-hidden" 
-            aria-hidden="true"
-          ></div>
-          <p id="character-blurb" class="selection-copy is-hidden">WIP</p>
-          <div id="custom-character" class=" is-hidden">
-            <input type="text" id="name-input" placeholder="Character Name">
-            <input type="number" id="health-input" max="25" min="10" placeholder="Health (10-25)">
-            <textarea id="desc-input" name="desc-input" placeholder="Character Description"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <button id="start-game" class="primary-action is-hidden" type="button">
-        Start
+      <p id="quest-blurb" class="selection-copy is-hidden">WIP</p>
+      <button id="confirm-quest" class="primary-action is-hidden" type="button">
+        Select Quest
       </button>
+    </div>
 
-      <div
-        id="health-container"
-        class="health-meter is-hidden"
-      >
-        <div id="health-fill" class="health-fill"></div>
-        <div id="health-label" class="health-label">10/10</div>
+    <div id="character-select" class="setup-panel is-hidden">
+      <div class="button-grid">
+        <button id="character-1" class="option-button" type="button">
+          Fitzgerald
+        </button>
+        <button id="character-2" class="option-button is-selected" type="button">
+          Wilde
+        </button>
+        <button id="character-3" class="option-button" type="button">
+          Burgess
+        </button>
+        <button id="character-4" class="option-button" type="button">
+          Custom
+        </button>
       </div>
-
-      <div id="chat-window" class="chat-window" aria-live="polite">
-        Connecting...
-      </div>
-
-      <form id="action-form" class="action-form is-hidden">
-        <button id="choice-1" class="choice-button" type="button">
-          Choice one
-        </button>
-        <button id="choice-2" class="choice-button" type="button">
-          Choice two
-        </button>
-        <button id="choice-3" class="choice-button" type="button">
-          Choice three
-        </button>
-        <input
-          id="user-input"
-          type="text"
-          placeholder="Enter action"
-          autocomplete="off"
-        >
-        <button id="send-action" class="primary-action" type="submit">
-          Send
-        </button>
-      </form>
-
-      <div id="chat-actions" class="setup-panel is-hidden">
-        
-          <button id="current-conversation" class="chat-action is-selected" type="button">
-            Conversation
-          </button>
-          <button id="show-chat-history" class="chat-action" type="button">
-            Chat history
-          </button>
-          <button id="character-panel" class="chat-action" type="button">
-            Character panel
-          </button>
-          <button id="world-info" class="chat-action" type="button">
-            World info
-          </button>
+      <div class="character-details">
+        <div id="character-profile" class="character-profile is-hidden" aria-hidden="true"></div>
+        <p id="character-blurb" class="selection-copy is-hidden">WIP</p>
+        <div id="custom-character" class=" is-hidden">
+          <input type="text" id="name-input" placeholder="Character Name">
+          <input type="number" id="health-input" max="25" min="10" placeholder="Health (10-25)">
+          <textarea id="desc-input" name="desc-input" placeholder="Character Description"></textarea>
         </div>
+      </div>
+    </div>
 
-    </main>
+    <button id="start-game" class="primary-action is-hidden" type="button">
+      Start
+    </button>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="/chat.js"></script>
-  </body>
+    <div id="health-container" class="health-meter is-hidden">
+      <div id="health-fill" class="health-fill"></div>
+      <div id="health-label" class="health-label">10/10</div>
+    </div>
+
+    <div id="chat-window" class="chat-window" aria-live="polite">
+      Connecting...
+    </div>
+
+    <form id="action-form" class="action-form is-hidden">
+      <button id="choice-1" class="choice-button" type="button">
+        Choice one
+      </button>
+      <button id="choice-2" class="choice-button" type="button">
+        Choice two
+      </button>
+      <button id="choice-3" class="choice-button" type="button">
+        Choice three
+      </button>
+      <input id="user-input" type="text" placeholder="Enter action" autocomplete="off">
+      <button id="send-action" class="primary-action" type="submit">
+        Send
+      </button>
+    </form>
+
+    <div id="chat-actions" class="setup-panel is-hidden">
+
+      <button id="current-conversation" class="chat-action is-selected" type="button">
+        Conversation
+      </button>
+      <button id="show-chat-history" class="chat-action" type="button">
+        Chat history
+      </button>
+      <button id="character-panel" class="chat-action" type="button">
+        Character panel
+      </button>
+      <button id="world-info" class="chat-action" type="button">
+        World info
+      </button>
+    </div>
+
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/chat.js"></script>
+</body>
+
 </html>
