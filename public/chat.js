@@ -72,14 +72,12 @@ const chatActionButtons = [
   document.getElementById("current-conversation"),
   document.getElementById("show-chat-history"),
   document.getElementById("character-panel"),
-  document.getElementById("world-info"),
 ];
 
 const chatActionButtonNames = {
   currentConversation: 0,
   showChatHistory: 1,
   characterPanel: 2,
-  worldInfo: 3,
 };
 
 // quests def
@@ -962,6 +960,7 @@ function selectQuest(questNumber, options = {}) {
   gameState.selectedQuestName = quest.name;
   gameState.relationships = quest.relationships;
   gameState.achievements = quest.achievements;
+  gameState.info = quest.info;
   elements.questBlurb.textContent = quest.blurb;
 
   if (options.reveal !== false) {
@@ -1001,6 +1000,8 @@ function selectCharacter(characterNumber, options = {}) {
       characters[4].description = document.getElementById("desc-input").value;
     }
   }
+
+  // get current character
   let character = characters[characterNumber];
   if (!character) {
     console.error("[Error] There is no character " + characterNumber + ".");
@@ -1017,7 +1018,7 @@ function selectCharacter(characterNumber, options = {}) {
   elements.characterBlurb.textContent = character.blurb;
   elements.characterProfile.className = `character-profile ${character.profileClass}`;
 
-
+  // update UI
   if (options.reveal !== false) {
     showElement(elements.characterBlurb);
     showElement(elements.characterProfile);
@@ -1029,7 +1030,6 @@ function selectCharacter(characterNumber, options = {}) {
     isCustomCharacter = false;
     showElement(elements.characterBlurb);
     hideElement(document.getElementById("custom-character"));
-    console.log("custom character deselected!");
   }
 
   // update UI
@@ -1344,10 +1344,10 @@ function buildPrompt(inputText) {
 
   request += `\n\nCurrent game state: \n\n`;
   request += `1. player status: \n${JSON.stringify(gameState.playerStatus, null, 2)} \n\n`;
-  request += `2. player relationships: \n${JSON.stringify(gameState.relationships, null, 2)} \n\n`;
-  request += `3. player skills: \n${JSON.stringify(gameState.skills, null, 2)} \n\n`;
-  request += `4. player inventory: \n${JSON.stringify(gameState.inventory, null, 2)} \n\n`;
-  request += `5. player achievements: \n${JSON.stringify(gameState.achievements, null, 2)} \n\n`;
+  request += `2. player skills: \n${JSON.stringify(gameState.skills, null, 2)} \n\n`;
+  request += `3. player inventory: \n${JSON.stringify(gameState.inventory, null, 2)} \n\n`;
+  request += `4. characters: \n${JSON.stringify(gameState.relationships, null, 2)} \n\n`;
+  request += `5. achievements: \n${JSON.stringify(gameState.achievements, null, 2)} \n\n`;
 
   request += `\n\nCurrent conversation: ${inputText}\n\n`;
 
@@ -1356,11 +1356,15 @@ function buildPrompt(inputText) {
     request += `[${memory}] \n\n`;
   }
 
+  // add last conversation
   request +=
     "\n\nLast Conversation: " +
     gameState.chatHistory[gameState.chatHistory.length - 2] +
     " " +
     gameState.chatHistory[gameState.chatHistory.length - 1];
+
+  // add world info
+  request = triggerWorldInfo(request);
 
   // test
   console.log("Request: \n\n" + request);
@@ -1416,8 +1420,23 @@ function sendMessage() {
 }
 
 // add worldInfo into prompt
-function triggerWorldInfo (request) {
-  
+function triggerWorldInfo(request) {
+
+  request += "\n\nWorld Info: \n\n";
+
+  if (gameState.info && Object.keys(gameState.info).length > 0) {
+    Object.values(gameState.info).forEach((item) => {
+      for (let i = 0; i < item.triggers.length; i++) {
+        if (request.includes(item.triggers[i])) {
+          console.warn("triggered worldinfo: " + item.triggers[i] + " Content:" + item.content);
+          request += item.content + "\n\n";
+          break;
+        }
+      }
+    });
+  }
+
+  return request;
 }
 
 // apply choice and auto send to server
