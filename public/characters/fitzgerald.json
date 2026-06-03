@@ -9,12 +9,12 @@
       "max": 10
     },
     "mana": {
-      "current": 15,
-      "max": 15
+      "current": 25,
+      "max": 25
     },
-    "strength": 5,
-    "agility": 5,
-    "intelligence": 5,
+    "strength": -5,
+    "agility": 0,
+    "intelligence": 3,
     "magic": 5,
     "modifiers": {
       "slow": {
@@ -25,34 +25,34 @@
   },
   "skills": {
     "SkillNameExample1": {
-      "name": "skill's display name",
-      "description": "skill's description",
+      "name": "Magical Knowhow",
+      "description": "The knowledge of the ins and outs of all things magical.",
       "modifier": {
-        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+        "trigger": "passive skill: always active",
+        "modify": "Increased magical power and identifies any magical effect or item."
       }
     },
     "SkillNameExample2": {
-      "name": "skill's display name",
-      "description": "skill's description",
+      "name": "Counterspell",
+      "description": "Counter a magical attack and dispel it into harmless mana",
       "modifier": {
-        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+        "trigger": "active skill: ask player to use it by your judgement",
+        "modify": "Nullify an opponents attack spell at the cost of 1.5x the mana it would take to cast it."
       }
     }
   },
   "inventory": {
     "ItemNameExample1": {
-      "name": "item's display name",
+      "name": "Spellbook",
       "number": 1,
-      "description": "item's background and usages' short description",
-      "modify": "e.g. intelligence + 1"
+      "description": "A well-worn tome containing all your spells and recipes.",
+      "modify": "no effect"
     },
     "ItemNameExample2": {
-      "name": "item's display name",
+      "name": "Emergency Mana Potion",
       "number": 1,
-      "description": "item's background and usages' short description",
-      "modify": "e.g. intelligence + 1"
+      "description": "A small concentrated vial of mana.",
+      "modify": "Completely restores mana to max. One time use."
     }
   }
 }

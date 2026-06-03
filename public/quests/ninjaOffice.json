@@ -1,19 +1,13 @@
 {
-  "name": "Ninja Office",
-  "prompt": "The user is in an office building, which is a front for a band of ninjas. The user must progress through 6 rooms before reaching the boss's office, who is the leader of the group of ninjas. FOR THIS QUEST AND THIS QUEST ALONE, THE ADVENTURE IS SET IN PRESENT DAY, WITH MODERN TECHNOLOGY. THIS IS NOT SHOCKING TO THE CHARACTERS, AND THEY UNDERSTAND EVERYTHING PERFECTLY WELL BECAUSE THEY ARE ALSO FROM MODERN DAY IN THIS ONE QUEST. The user has been tasked with defeating this leader. The first room does not have any enemies, being a regular reception room, and the rest are normal office rooms, but each room except for the reception room will contain a ninja disguised as an office worker, who is a master at some office-related weapon or ninja skill (for example, throwing knife scissors, potted plant substitution jutsu, or photocopier shadow clones) (The weapon or skill the ninja is a master at shouldn't be directly told to the player immediately, it should only be revealed when the ninja actually uses their weapon or ability. Subtle clues are allowed however, like the throwing knife scissors ninja holding suspiciously sharp scissors, but it shouldn't be said immediately that they are throwing knives unless the ninja uses them as such). These ninjas are hostile to the user, but those in the second or third room can be fooled to letting the user pass. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the building are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's office. The boss wields all of the weapons and skills from the office ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
-  "blurb": "Infiltrate and take out the leader of a band of office ninjas in their corporate headquarters.",
+  "name": "Ninja Palace",
+  "prompt": "The user is in a japanese style palace, which is a hideout for a band of ninjas. The user must progress through 6 rooms before reaching the boss's room, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, but the rest of them have 1 hostile ninja each, with the exception of room 6, which has 2. Each ninja is a master of a specific ninja weapon or magical jutsu. For instance, there may be a katana master in a training hall, or a paper Shikigami jutsu master in a library. Don't immediately reveal what they are a master of, it should only be mentioned after the ninja makes an attack with their respective mastery. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the palace are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's room. The boss wields all of the weapons and skills from the ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
+  "blurb": "Infiltrate and take out the leader of a band of ninjas in their japanese palace.",
   "relationships": {
     "relationshipNameExample1": {
-      "name": "display name for this character",
+      "name": "Ninja Boss",
       "triggers": ["trigger1", "trigger2", "trigger3"],
-      "description": "character's description",
-      "relationship": "relationship's description"
-    },
-    "relationshipNameExample2": {
-      "name": "display name for this character",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
-      "description": "character's description",
-      "relationship": "relationship's description"
+      "description": "The mysterious leader of the ninjas.",
+      "relationship": "Hostile. You have been tasked with killing them."
     }
   },
   "achievements": {

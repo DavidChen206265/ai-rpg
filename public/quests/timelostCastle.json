@@ -4,31 +4,25 @@
   "blurb": "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
   "relationships": {
     "relationshipNameExample1": {
-      "name": "display name for this character",
+      "name": "the Mad Mage",
       "triggers": ["trigger1", "trigger2", "trigger3"],
-      "description": "character's description",
-      "relationship": "relationship's description"
-    },
-    "relationshipNameExample2": {
-      "name": "display name for this character",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
-      "description": "character's description",
-      "relationship": "relationship's description"
+      "description": "A tan-skinned elf with silver hair and violet irises. She cast a time-freezing spell over the kingdom.",
+      "relationship": "Hostile. You must defeat her to save the kingdom."
     }
   },
   "achievements": {
     "achievementNameExample1": {
-      "name": "display name for this achievement",
+      "name": "A leap through time",
       "isAchieved": false,
       "triggers": ["trigger1", "trigger2", "trigger3"],
-      "condition": "condition to achieve this achievement",
+      "condition": "Progress forward to a new time period, entering room 3",
       "reward": ""
     },
     "achievementNameExample2": {
-      "name": "display name for this achievement",
+      "name": "Chronological Explorer",
       "isAchieved": false,
       "triggers": ["trigger1", "trigger2", "trigger3"],
-      "condition": "condition to achieve this achievement",
+      "condition": "Enter the futuristic rooms of the castle, rooms 7-8",
       "reward": ""
     }
   },

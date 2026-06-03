@@ -12,10 +12,10 @@
       "current": 15,
       "max": 15
     },
-    "strength": 5,
-    "agility": 5,
-    "intelligence": 5,
-    "magic": 5,
+    "strength": -2,
+    "agility": 3,
+    "intelligence": 1,
+    "magic": 1,
     "modifiers": {
       "slow": {
         "duration": "5 hours",
@@ -25,34 +25,34 @@
   },
   "skills": {
     "SkillNameExample1": {
-      "name": "skill's display name",
-      "description": "skill's description",
+      "name": "Acrobatics",
+      "description": "Move like the wind, nimbly and swiftly",
       "modifier": {
-        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+        "trigger": "passive skill: always active",
+        "modify": "Enemies are less likely to hear your movements, and you move faster in all environments."
       }
     },
     "SkillNameExample2": {
-      "name": "skill's display name",
-      "description": "skill's description",
+      "name": "Powershot",
+      "description": "Channel energy into your bow, empowering its next shot",
       "modifier": {
-        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+        "trigger": "active skill: ask player to use it by your judgement",
+        "modify": "The next arrow fired from your bow deals triple damage, at the cost of mana."
       }
     }
   },
   "inventory": {
     "ItemNameExample1": {
-      "name": "item's display name",
+      "name": "Ranger's Bow",
       "number": 1,
-      "description": "item's background and usages' short description",
-      "modify": "e.g. intelligence + 1"
+      "description": "Your trusty bow. Sleek, black, and deadly.",
+      "modify": "no effect."
     },
     "ItemNameExample2": {
-      "name": "item's display name",
+      "name": "Knife",
       "number": 1,
-      "description": "item's background and usages' short description",
-      "modify": "e.g. intelligence + 1"
+      "description": "The knife you keep stashed in your boot. Light and designed for stabbing.",
+      "modify": "inflicts bleed on enemies struck."
     }
   }
 }

@@ -64,5 +64,3 @@ Character Progression: The system allows for deep customization in class and cha
 Favicon
 Manifest and PWA support
 Character Profiles
-UI phone fix
-Code commenting???

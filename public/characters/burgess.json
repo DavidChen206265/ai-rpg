@@ -9,13 +9,13 @@
       "max": 25
     },
     "mana": {
-      "current": 15,
-      "max": 15
+      "current": 0,
+      "max": 0
     },
     "strength": 5,
-    "agility": 5,
-    "intelligence": 5,
-    "magic": 5,
+    "agility": 2,
+    "intelligence": 1,
+    "magic": -5,
     "modifiers": {
       "slow": {
         "duration": "5 hours",
@@ -25,34 +25,34 @@
   },
   "skills": {
     "SkillNameExample1": {
-      "name": "skill's display name",
-      "description": "skill's description",
+      "name": "Absolute Unit",
+      "description": "Your years of training and weightlifting have left you incredibly swole.",
       "modifier": {
-        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+        "trigger": "passive skill: always active",
+        "modify": "Increased damage on melee attacks. You can lift up to 300kg in weight."
       }
     },
     "SkillNameExample2": {
-      "name": "skill's display name",
-      "description": "skill's description",
+      "name": "Blazing Fist",
+      "description": "Your ultimate move: punch so hard you set things on fire",
       "modifier": {
-        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
-        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+        "trigger": "active skill: ask player to use it by your judgement",
+        "modify": "Anything hit with the Blazing Fist is burned and set on fire."
       }
     }
   },
   "inventory": {
     "ItemNameExample1": {
-      "name": "item's display name",
+      "name": "Battleaxe",
       "number": 1,
-      "description": "item's background and usages' short description",
-      "modify": "e.g. intelligence + 1"
+      "description": "Your battleaxe. You have trained with it so much it's practically a part of you.",
+      "modify": "no effect"
     },
     "ItemNameExample2": {
-      "name": "item's display name",
+      "name": "Brass Knuckles",
       "number": 1,
-      "description": "item's background and usages' short description",
-      "modify": "e.g. intelligence + 1"
+      "description": "Your trusty brass knuckles. Technically made of bronze.",
+      "modify": "Adds slight armor piercing to punches"
     }
   }
 }
