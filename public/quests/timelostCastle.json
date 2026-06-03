@@ -1,0 +1,45 @@
+{
+  "name": "Timelost Castle",
+  "prompt": "The user is in a large fancy castle, which has been taken over by a mad mage who has cast a spell over the whole kingdom, freezing the kingdom and its inhabitants in time. You have been sent from a neighboring kingdom to stop this mage. The user must make their way through 8 rooms before reaching the throne room where the mad mage resides. The 8 rooms either have a puzzle to solve or monster to fight (the first room always only has a puzzle). As the user progresses through the rooms of the castle, the puzzles and monsters progress through time from prehistory to more modern, and eventually to futuristic. If the user dies in the castle, the magic overtakes them and they get frozen in time forever. The monsters and puzzles at the start of the adventure (rooms 1-2) are prehistoric, the early middle rooms (rooms 3-4) have roman / greek era puzzles and monsters, then the late middle rooms (rooms 5-6) have victorian puzzles and monsters, and the last rooms (rooms 7-8) have futuristic puzzles and monsters. (none of the monsters are humans.) Remember that the castle is frozen in time, so there should be no moving decor. (no ticking clocks, no dripping water, no moving curtains. The decor can still be moved, but will always be still when the user arrives.) Once the user passes room 8 they find the mad mage herself in the throne room of the castle, ready for a fight (the mad mage only ever shows up in the throne room). The appearance of the mad mage is that of a tan-skinned elf with wavy light silver hair and violet iris's, with fine purple medevial clothes.  The mad mage casts time magic to fight, speeding themselves up and slowing you down, and launching magic missiles. When the mad mage is defeated, the kingdom is released from its time freezing curse and returns to normal. THERE IS NO OTHER WAY TO REVERSE THIS MAGIC THAN TO KILL THE MAD MAGE. When the mad mage is defeated, the user wins the game.",
+  "blurb": "Fight and solve puzzles in a time-frozen castle, progressing through history itself to defeat the mad mage who cursed the kingdom.",
+  "relationships": {
+    "relationshipNameExample1": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    },
+    "relationshipNameExample2": {
+      "name": "display name for this character",
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "description": "character's description",
+      "relationship": "relationship's description"
+    }
+  },
+  "achievements": {
+    "achievementNameExample1": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    },
+    "achievementNameExample2": {
+      "name": "display name for this achievement",
+      "isAchieved": false,
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "condition": "condition to achieve this achievement",
+      "reward": ""
+    }
+  },
+  "info": {
+    "infoNameExample1": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    },
+    "infoNameExample2": {
+      "triggers": ["trigger1", "trigger2", "trigger3"],
+      "content": ""
+    }
+  }
+}

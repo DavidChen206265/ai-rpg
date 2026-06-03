@@ -1,0 +1,58 @@
+{
+  "name": "Burgess",
+  "profileClass": "profile-warrior",
+  "description": "Burgess, a strong warrior. They are very strong, and well trained in all manner of close combat. They have high defense and stamina, and are very well suited to feats of strength. They are also somewhat nimble, but lack the ability for major acrobatic movements. However, they have a complete and utter lack of magic, being completely incapable under any circumstances to cast even the simplest of spells. They can still use potions and magical items, but cannot cast any magic on their own at all. They have 25 hit points total. They start with sturdy chainmail armor, a battleaxe, and brass knuckles.",
+  "blurb": "Burgess - a powerful warrior with a strong constitution. They have no magical talent, but make up for it with overwhelming strength and a large health pool.",
+  "playerStatus": {
+    "health": {
+      "current": 25,
+      "max": 25
+    },
+    "mana": {
+      "current": 15,
+      "max": 15
+    },
+    "strength": 5,
+    "agility": 5,
+    "intelligence": 5,
+    "magic": 5,
+    "modifiers": {
+      "slow": {
+        "duration": "5 hours",
+        "modify": "agility - 3"
+      }
+    }
+  },
+  "skills": {
+    "SkillNameExample1": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    },
+    "SkillNameExample2": {
+      "name": "skill's display name",
+      "description": "skill's description",
+      "modifier": {
+        "trigger": "passive skill: when to automatically apply this skill /  active skill: ask player to use it by your judgement",
+        "modify": "e.g. player attack's damage +1 / the nearest enemy is affected by a 30% slow"
+      }
+    }
+  },
+  "inventory": {
+    "ItemNameExample1": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    },
+    "ItemNameExample2": {
+      "name": "item's display name",
+      "number": 1,
+      "description": "item's background and usages' short description",
+      "modify": "e.g. intelligence + 1"
+    }
+  }
+}
