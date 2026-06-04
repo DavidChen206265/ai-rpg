@@ -5,6 +5,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const express = require("express");
 const http = require("http");
+const https = require("https");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const { Server } = require("socket.io");
 
@@ -25,9 +26,9 @@ const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
 
 // AI
 const AI_API = {
-  baseUrl: "https://gcli.ggchan.dev/v1/chat/completions",
-  mainModel: "gemini-3.1-pro-preview",
-  dataModel: "gemini-3-flash-preview",
+  baseUrl: process.env.AI_BASE_URL || "https://gcli.ggchan.dev/v1/chat/completions",
+  mainModel: process.env.AI_MAIN_MODEL || "gemini-3.1-pro-preview",
+  dataModel: process.env.AI_DATA_MODEL || "gemini-3-flash-preview",
 };
 
 const app = express();
@@ -432,50 +433,11 @@ async function requireAuthUser(req) {
 
 // stream output
 async function streamChatCompletion({ model, prompt, onChunk }) {
-  const response = await fetch(AI_API.baseUrl, {
-    method: "POST",
-    headers: getAiHeaders(),
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: prompt }],
-      stream: true,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`API request failed, status code: ${response.status}`);
-  }
-
-  const decoder = new TextDecoder("utf-8");
-  
-  let buffer = "";
-  let fullMessage = "";
-
-  for await (const chunk of response.body) {
-    buffer += decoder.decode(chunk, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop();
-
-    for (const line of lines) {
-      if (!line.trim() || !line.startsWith("data: ")) continue;
-
-      const payload = line.replace("data: ", "").trim();
-      if (payload === "[DONE]") return fullMessage;
-
-      try {
-        const data = JSON.parse(payload);
-        const delta = data.choices[0]?.delta?.content;
-        if (delta) {
-          fullMessage += delta;
-          onChunk(delta);
-        }
-      } catch (error) {
-        console.error("Error parsing stream chunk:", error, line);
-      }
-    }
-  }
-
-  return fullMessage;
+  return postAiStream({
+    model,
+    messages: [{ role: "user", content: prompt }],
+    stream: true,
+  }, onChunk);
 }
 
 // data AI: summarize the last conversation
@@ -491,20 +453,10 @@ async function summarizeConversation(socket, currentInput, aiResponse) {
   ].join("\n");
 
   try {
-    const response = await fetch(AI_API.baseUrl, {
-      method: "POST",
-      headers: getAiHeaders(),
-      body: JSON.stringify({
-        model: AI_API.dataModel,
-        messages: [{ role: "user", content: prompt }],
-      }),
+    const data = await postAiJson({
+      model: AI_API.dataModel,
+      messages: [{ role: "user", content: prompt }],
     });
-
-    if (!response.ok) {
-      throw new Error(`API request failed, status code: ${response.status}`);
-    }
-
-    const data = await response.json();
     socket.emit("data_response", data.choices[0].message.content);
   } catch (error) {
     socket.emit("data_response", `[Error]: ${error.message}`);
@@ -516,6 +468,101 @@ function getAiHeaders() {
     "Content-Type": "application/json",
     Authorization: `Bearer ${process.env.AI_API_KEY}`,
   };
+}
+
+function makeAiRequest(payload, onResponse) {
+  const url = new URL(AI_API.baseUrl);
+  const body = JSON.stringify(payload);
+  const client = url.protocol === "https:" ? https : http;
+  const request = client.request({
+    method: "POST",
+    hostname: url.hostname,
+    port: url.port || (url.protocol === "https:" ? 443 : 80),
+    path: `${url.pathname}${url.search}`,
+    headers: {
+      ...getAiHeaders(),
+      "Content-Length": Buffer.byteLength(body),
+    },
+  }, onResponse);
+
+  request.setTimeout(180000, () => request.destroy(new Error("AI request timed out.")));
+  request.write(body);
+  request.end();
+  return request;
+}
+
+function postAiJson(payload) {
+  return new Promise((resolve, reject) => {
+    const request = makeAiRequest(payload, (response) => {
+      let raw = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => {
+        raw += chunk;
+      });
+      response.on("end", () => {
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          reject(new Error(`API request failed, status code: ${response.statusCode}`));
+          return;
+        }
+        try {
+          resolve(JSON.parse(raw));
+        } catch (error) {
+          reject(new Error(`Invalid AI JSON response: ${error.message}`));
+        }
+      });
+    });
+
+    request.on("error", reject);
+  });
+}
+
+function postAiStream(payload, onChunk) {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const request = makeAiRequest(payload, (response) => {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        response.resume();
+        reject(new Error(`API request failed, status code: ${response.statusCode}`));
+        return;
+      }
+
+      let buffer = "";
+      let fullMessage = "";
+      response.setEncoding("utf8");
+      response.on("data", (chunk) => {
+        buffer += chunk;
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.trim() || !line.startsWith("data: ")) continue;
+
+          const payloadText = line.replace("data: ", "").trim();
+          if (payloadText === "[DONE]") {
+            settled = true;
+            resolve(fullMessage);
+            return;
+          }
+
+          try {
+            const data = JSON.parse(payloadText);
+            const delta = data.choices[0]?.delta?.content;
+            if (delta) {
+              fullMessage += delta;
+              onChunk(delta);
+            }
+          } catch (error) {
+            console.error("Error parsing stream chunk:", error, line);
+          }
+        }
+      });
+      response.on("end", () => {
+        if (!settled) resolve(fullMessage);
+      });
+    });
+
+    request.on("error", reject);
+  });
 }
 
 // boot the server
