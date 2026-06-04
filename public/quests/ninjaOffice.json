@@ -1,28 +1,25 @@
 {
   "name": "Ninja Palace",
-  "prompt": "The user is in a japanese style palace, which is a hideout for a band of ninjas. The user must progress through 6 rooms before reaching the boss's room, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, but the rest of them have 1 hostile ninja each, with the exception of room 6, which has 2. Each ninja is a master of a specific ninja weapon or magical jutsu. For instance, there may be a katana master in a training hall, or a paper Shikigami jutsu master in a library. Don't immediately reveal what they are a master of, it should only be mentioned after the ninja makes an attack with their respective mastery. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the palace are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's room. The boss wields all of the weapons and skills from the ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
+  "prompt": "The user is in a japanese style palace, which is a hideout for a band of ninjas. The user must progress through 6 rooms before reaching the boss's room, who is the leader of the group of ninjas. The user has been tasked with defeating this leader. The first room does not have any enemies, but the rest of them have 1 hostile ninja each, with the exception of room 6, which has 2 (they are twins). Each ninja is a master of a specific ninja weapon or magical jutsu. For instance, there may be a katana master in a training hall, or a paper Shikigami jutsu master in a library. Don't immediately reveal what they are a master of, it should only be mentioned after the ninja makes an attack with their respective mastery. These ninjas will never ask you riddles or puzzles (this quest is primarily combat-focused), but there is a puzzle locking the doors to the fourth and fifth rooms. The ninjas further in the palace are hardier than the ninjas at the start, and are harder to kill and deal more damage. All ninjas partake in witty banter while fighting, potentially giving clues to their next attacks very rarely. The final room after room 6 is the boss's room. The boss wields all of the weapons and skills from the ninjas you met, and is a master at all of them. The boss is immediately hostile towards the user, and will not go down without a fight. The game is over when the boss is defeated.",
   "blurb": "Infiltrate and take out the leader of a band of ninjas in their japanese palace.",
   "relationships": {
     "relationshipNameExample1": {
       "name": "Ninja Boss",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "description": "The mysterious leader of the ninjas.",
-      "relationship": "Hostile. You have been tasked with killing them."
+      "relationship": "Hostile. You have been tasked with defeating them."
     }
   },
   "achievements": {
     "achievementNameExample1": {
-      "name": "display name for this achievement",
+      "name": "Whoops!",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
-      "condition": "condition to achieve this achievement",
+      "condition": "Hit a shadow clone or substitution log instead of a ninja",
       "reward": ""
     },
     "achievementNameExample2": {
-      "name": "display name for this achievement",
+      "name": "Katayanagi???",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
-      "condition": "condition to achieve this achievement",
+      "condition": "Defeat the twin ninjas",
       "reward": ""
     }
   },

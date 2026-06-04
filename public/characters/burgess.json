@@ -17,10 +17,6 @@
     "intelligence": 1,
     "magic": -5,
     "modifiers": {
-      "slow": {
-        "duration": "5 hours",
-        "modify": "agility - 3"
-      }
     }
   },
   "skills": {

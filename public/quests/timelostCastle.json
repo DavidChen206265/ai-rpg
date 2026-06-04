@@ -5,7 +5,6 @@
   "relationships": {
     "relationshipNameExample1": {
       "name": "the Mad Mage",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "description": "A tan-skinned elf with silver hair and violet irises. She cast a time-freezing spell over the kingdom.",
       "relationship": "Hostile. You must defeat her to save the kingdom."
     }
@@ -14,14 +13,12 @@
     "achievementNameExample1": {
       "name": "A leap through time",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "condition": "Progress forward to a new time period, entering room 3",
       "reward": ""
     },
     "achievementNameExample2": {
       "name": "Chronological Explorer",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "condition": "Enter the futuristic rooms of the castle, rooms 7-8",
       "reward": ""
     }
