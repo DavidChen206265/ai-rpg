@@ -1315,8 +1315,8 @@ function restoreInteractiveChat() {
 }
 
 // handle chunks in the main AI's response stream
-function handleAiChunk(message) {
-  streamState.fullResponse += message.slice(9);
+function handleAiChunk(delta) {
+  streamState.fullResponse += delta;
 
   if (streamState.isChoicesHidden) return;
 
@@ -1678,7 +1678,7 @@ socket.on("ai_stream", (message) => {
     // update streamState
     streamState.state = "waitingForFirstChunk";
 
-  } else if (message.startsWith("[Error]")) {
+  } else if (typeof message === "string" && message.startsWith("[Error]")) {
 
     // show error
     console.error(message);
@@ -1694,11 +1694,17 @@ socket.on("ai_stream", (message) => {
     // try to load the last valid save
     loadActiveSave();
 
-  } else if (message.startsWith("[Chunk]")) {
+  } else if (message?.type === "chunk") {
 
     // handle AI response chunks
     streamState.state = "receivingChunks";
-    handleAiChunk(message);
+    handleAiChunk(message.delta || "");
+
+  } else if (typeof message === "string" && message.startsWith("[Chunk]: ")) {
+
+    // handle legacy AI response chunks
+    streamState.state = "receivingChunks";
+    handleAiChunk(message.slice("[Chunk]: ".length));
 
   } else if (message === "end") {
 

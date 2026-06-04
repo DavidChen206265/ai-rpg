@@ -321,7 +321,7 @@ io.on("connection", (socket) => {
       const aiMessage = await streamChatCompletion({
         model: AI_API.mainModel,
         prompt,
-        onChunk: (delta) => socket.emit("ai_stream", `[Chunk]: ${delta}`),
+        onChunk: (delta) => socket.emit("ai_stream", { type: "chunk", delta }),
       });
 
       socket.emit("ai_stream", "end");
