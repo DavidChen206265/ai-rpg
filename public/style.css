@@ -295,6 +295,7 @@ button:disabled {
 .character-profile {
   min-height: 120px;
   min-width: 120px;
+  aspect-ratio: 1 / 1; 
   border-radius: 8px;
   background-color: #365778;
 
@@ -671,6 +672,8 @@ button:disabled {
 
   .character-profile {
     min-height: 86px;
+    min-width: 86px;
+    aspect-ratio: 1 / 1; 
   }
 
   .character-panel-header,
