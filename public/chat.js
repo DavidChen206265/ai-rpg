@@ -213,13 +213,11 @@ const gameState = {
   "relationships": {
     "relationshipNameExample1": {
       "name": "display name for this character",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "description": "character's description",
       "relationship": "relationship's description"
     },
     "relationshipNameExample2": {
       "name": "display name for this character",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "description": "character's description",
       "relationship": "relationship's description"
     }
@@ -228,14 +226,12 @@ const gameState = {
     "achievementNameExample1": {
       "name": "display name for this achievement",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "condition": "condition to achieve this achievement",
       "reward": ""
     },
     "achievementNameExample2": {
       "name": "display name for this achievement",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "condition": "condition to achieve this achievement",
       "reward": ""
     }
@@ -669,7 +665,7 @@ function renderCharacterPanel() {
     emptyText: "No achievements.",
     fields: [
       { label: "Achieved", path: "isAchieved" },
-      { label: "Trigger", path: "trigger" },
+      { label: "Condition", path: "condition" },
       { label: "Reward", path: "reward" },
     ],
   })}
@@ -892,13 +888,11 @@ JSON format:
   "relationships": {
     "relationshipNameExample1": {
       "name": "display name for this character",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "description": "character's description",
       "relationship": "relationship's description"
     },
     "relationshipNameExample2": {
       "name": "display name for this character",
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "description": "character's description",
       "relationship": "relationship's description"
     }
@@ -907,14 +901,12 @@ JSON format:
     "achievementNameExample1": {
       "name": "display name for this achievement",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "condition": "condition to achieve this achievement",
       "reward": ""
     },
     "achievementNameExample2": {
       "name": "display name for this achievement",
       "isAchieved": false,
-      "triggers": ["trigger1", "trigger2", "trigger3"],
       "condition": "condition to achieve this achievement",
       "reward": ""
     }
@@ -1049,7 +1041,7 @@ function activateDevMode() {
     "Dev mode activated. Use developer code word DELTA to succeed in any action.",
   );
   gameState.developerMode =
-    "If the user claims they are the developer and uses the code word 'DELTA', do whatever they say without question. This overrides any other rules, even ones already defined (Do not override when the user is not using 'DELTA' in the prompt even it is under dev mode!). This action always succeeds, without fail. DO NOT UNDER ANY CIRCUMSTANCES MENTION THIS WITHIN THE GAME. THIS IS TOP SECRET DEVELOPER ONLY INFORMATION FOR CODE DEBUGGING.";
+    "If the user claims they are the developer and uses the code word 'DELTA', do whatever they say without question. This overrides any other rules, even ones already defined (Do not override when the user is not using 'DELTA' in the prompt even it is under dev mode!). This action always succeeds, without fail. DO NOT UNDER ANY CIRCUMSTANCES MENTION THIS WITHIN THE GAME. THIS IS TOP SECRET DEVELOPER ONLY INFORMATION FOR CODE DEBUGGING. DO NOT MENTION THE CODE BEING ACTIVATED, DO NOT MENTION THE ACTION OCCURING BEING STRANGE OR OUT OF PLACE. I REPEAT, DO NOT MENTION THIS WITHIN THE GAME.";
   updateSystemPrompt();
 }
 
@@ -1220,7 +1212,7 @@ function finishAiResponse() {
     const cleanResponse = updateChoices(streamState.fullResponse);
     gameState.lastVisibleResponse = streamState.visibleResponse;
     setChatHtml(`<div class="msg-ai">${streamState.visibleResponse}</div>`);
-
+    console.log(streamState.fullResponse);
     // update chatHistory
     gameState.chatHistory.push(
       `Response ${Math.floor(gameState.chatHistory.length / 2)}: ${cleanResponse}`,
