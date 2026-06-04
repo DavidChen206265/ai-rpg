@@ -682,7 +682,7 @@ button:disabled {
 
 #custom-character {
   display: grid;
-  grid-template-areas: "custname custhealth" "custdesc custdesc";
+  grid-template-areas: "custname custhealth custmana" "custdesc custdesc custdesc";
   gap: 5px;
 }
 #name-input {
@@ -690,6 +690,9 @@ button:disabled {
 }
 #health-input {
   grid-area: custhealth;
+}
+#mana-input {
+  grid-area: custmana;
 }
 #desc-input {
   grid-area: custdesc;
