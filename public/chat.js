@@ -46,6 +46,10 @@ const elements = {
   healthFill: document.getElementById("health-fill"),
   healthLabel: document.getElementById("health-label"),
   chatActions: document.getElementById("chat-actions"),
+  characterName: document.getElementById("name-input"),
+  healthInput: document.getElementById("health-input"),
+  manaInput: document.getElementById("mana-input"),
+  characterDesc: document.getElementById("desc-input"),
 };
 
 const choiceButtons = [
@@ -981,15 +985,22 @@ function selectCharacter(characterNumber, options = {}) {
   // custom character
   if (characterNumber == 4) {
     isCustomCharacter = true;
-    if (document.getElementById("name-input").value) {
-      characters[4].name = document.getElementById("name-input").value;
+    if (elements.characterName.value) {
+      characters[4].name = elements.characterName.value;
     }
-    if (document.getElementById("health-input").value) {
-      characters[4].playerStatus.health.max = document.getElementById("health-input").value;
-      characters[4].playerStatus.health.current = document.getElementById("health-input").value;
+
+    if (elements.healthInput.value && elements.healthInput.value >= 10 && elements.healthInput.value <= 25) {
+      characters[4].playerStatus.health.max = elements.healthInput.value;
+      characters[4].playerStatus.health.current = elements.healthInput.value;
     }
-    if (document.getElementById("desc-input").value) {
-      characters[4].description = document.getElementById("desc-input").value;
+
+    if (elements.manaInput.value && elements.manaInput.value >= 10 && elements.manaInput.value <= 25) {
+      characters[4].playerStatus.mana.max = elements.manaInput.value;
+      characters[4].playerStatus.mana.current = elements.manaInput.value;
+    }
+
+    if (elements.characterDesc.value) {
+      characters[4].description = elements.characterDesc.value;
     }
   }
 
