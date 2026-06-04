@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3000;
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const IMAGE_DIR = path.join(PUBLIC_DIR, "imgs");
+const BACKGROUND_IMAGE_DIR = path.join(IMAGE_DIR, "background");
+const PROFILE_IMAGE_DIR = path.join(IMAGE_DIR, "profile");
 
 // MongoDB names
 const DATABASE_NAME = "ai_rpg_db";
@@ -56,9 +58,10 @@ app.get("/", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "index.html")));
 app.get("/login", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "login.html")));
 app.get("/chat", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "chat.html")));
 
+// image routers
 app.get("/api/background-images", async (req, res) => {
   try {
-    const entries = await fs.readdir(IMAGE_DIR, { withFileTypes: true });
+    const entries = await fs.readdir(BACKGROUND_IMAGE_DIR, { withFileTypes: true });
     const images = entries
       .filter((entry) => entry.isFile())
       .map((entry) => entry.name)
@@ -68,6 +71,21 @@ app.get("/api/background-images", async (req, res) => {
     res.json({ images });
   } catch (error) {
     res.status(500).json({ error: "Failed to load background images." });
+  }
+});
+
+app.get("/api/profile-images", async (req, res) => {
+  try {
+    const entries = await fs.readdir(PROFILE_IMAGE_DIR, { withFileTypes: true });
+    const images = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((fileName) => /\.(jpe?g|png|webp)$/i.test(fileName))
+      .sort((a, b) => a.localeCompare(b));
+
+    res.json({ images });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load profile images." });
   }
 });
 

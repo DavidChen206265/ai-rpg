@@ -1651,7 +1651,7 @@ function changeBackgroundTo(img) {
   if (img === "default") {
     document.body.style.backgroundImage = "none";
   } else {
-    document.body.style.backgroundImage = `url(imgs/${img})`;
+    document.body.style.backgroundImage = `url(imgs/background/${img})`;
   }
 }
 

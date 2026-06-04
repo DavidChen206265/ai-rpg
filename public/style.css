@@ -23,8 +23,13 @@ body {
   padding: 32px 16px;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-size:cover;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background-size: cover;
 }
 
 a {
@@ -96,10 +101,10 @@ button:disabled {
   margin: 0;
 }
 
-#game-title{
-  background-color:var(--bg);
-  border-radius:5px;
-  padding:10px;
+#game-title {
+  background-color: var(--bg);
+  border-radius: 5px;
+  padding: 10px;
 }
 
 #page-actions,
@@ -240,8 +245,8 @@ button:disabled {
   border-radius: 8px;
   margin-top: 20px;
 }
-@media (max-width:600px){
-  #chat-actions{
+@media (max-width: 600px) {
+  #chat-actions {
     grid-template-columns: 1fr;
   }
 }
@@ -289,8 +294,13 @@ button:disabled {
 
 .character-profile {
   min-height: 120px;
+  min-width: 120px;
   border-radius: 8px;
-  background: #365778;
+  background-color: #365778;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .character-blurb {
@@ -300,15 +310,15 @@ button:disabled {
 }
 
 .character-profile.profile-wizard {
-  background: #4f46e5;
+  background-image: url("imgs/profile/profile-wizard.png");
 }
 
 .character-profile.profile-ranger {
-  background: #168157;
+  background-image: url("imgs/profile/profile-ranger.png");
 }
 
 .character-profile.profile-warrior {
-  background: #c24135;
+  background-image: url("imgs/profile/profile-warrior.png");
 }
 
 .health-meter {
@@ -414,19 +424,23 @@ button:disabled {
 .character-panel-avatar {
   min-height: 76px;
   border-radius: 8px;
-  background: #365778;
+  background-color: #365778;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .character-panel-avatar.profile-wizard {
-  background: #4f46e5;
+  background-image: url("imgs/profile/profile-wizard.png");
 }
 
 .character-panel-avatar.profile-ranger {
-  background: #168157;
+  background-image: url("imgs/profile/profile-ranger.png");
 }
 
 .character-panel-avatar.profile-warrior {
-  background: #c24135;
+  background-image: url("imgs/profile/profile-warrior.png");
 }
 
 .character-panel-kicker,
@@ -666,18 +680,18 @@ button:disabled {
   }
 }
 
-#custom-character{
-  display:grid;
+#custom-character {
+  display: grid;
   grid-template-areas: "custname custhealth" "custdesc custdesc";
-  gap:5px;
+  gap: 5px;
 }
-#name-input{
-  grid-area:custname;
+#name-input {
+  grid-area: custname;
 }
-#health-input{
-  grid-area:custhealth;
+#health-input {
+  grid-area: custhealth;
 }
-#desc-input{
-  grid-area:custdesc;
-  padding:5px;
+#desc-input {
+  grid-area: custdesc;
+  padding: 5px;
 }
