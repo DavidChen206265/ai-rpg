@@ -12,7 +12,10 @@ const HIDDEN_CLASS = "is-hidden";
 const AUTH_TOKEN_KEY = "ai_rpg_token";
 const AUTH_USER_KEY = "ai_rpg_user";
 
+// images
 let backgroundImages = [];
+let profileImages = [];
+let profileImagesDisplayingIndex = -1;
 
 // save keys
 const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
@@ -42,6 +45,8 @@ const elements = {
   characterSelect: document.getElementById("character-select"),
   characterBlurb: document.getElementById("character-blurb"),
   characterProfile: document.getElementById("character-profile"),
+  characterProfileNumber: document.getElementById("character-profile-number"),
+  customCharacter: document.getElementById("custom-character"),
   healthContainer: document.getElementById("health-container"),
   healthFill: document.getElementById("health-fill"),
   healthLabel: document.getElementById("health-label"),
@@ -137,7 +142,7 @@ async function loadCharacters() {
       const data = await response.json();
       loaded[key] = {
         name: data.name,
-        profileClass: data.profileClass,
+        profileImage: data.profileImage,
         description: data.description,
         blurb: data.blurb,
         playerStatus: data.playerStatus,
@@ -252,6 +257,7 @@ const gameState = {
   },
   "ui": {
     "backgroundImage": "lake.jpg",
+    "profileImage": profileImages[0],
   },
   "selectedQuestName": quests[1].name,
   "selectedCharacterName": characters[2].name,
@@ -612,10 +618,10 @@ function renderCharacterPanel() {
   const character = getSelectedCharacter();
   const status = gameState.playerStatus;
 
-  return `
+  let chatHtmlToSet = `
     <div class="character-panel">
       <div class="character-panel-header">
-        <div class="character-panel-avatar ${character.profileClass}" aria-hidden="true"></div>
+        <div id="character-profile" style="background-image: url(imgs/profile/${gameState.ui.profileImage});" aria-hidden="true"></div>
         <div>
           <p class="character-panel-kicker">Character Panel</p>
           <h2>${escapeHtml(gameState.selectedCharacterName)}</h2>
@@ -676,6 +682,9 @@ function renderCharacterPanel() {
       </div>
     </div>
   `;
+
+  // update ui
+  setChatHtml(chatHtmlToSet);
 }
 
 // remove the current save 
@@ -782,7 +791,8 @@ function applySaveSnapshot(snapshot = {}) {
   gameState.ui = snapshot.ui || gameState.ui;
 
   // set background
-  changeBackgroundTo(gameState.ui.backgroundImage);
+  changeBackgroundImageTo(gameState.ui.backgroundImage);
+  changeProfileImageTo(gameState.ui.profileImage);
 }
 
 // update the system prompt by  quest & character user selected
@@ -819,7 +829,7 @@ JSON update instructions:
 10. The average difficulty of a choice should be 13. Because the stats of the user are added to their roll, do not decrease the difficulty of choices if the user is good at them, or increase the difficulty if they are bad at them. This is already handled in the code outside this prompt.
 
 UI update instructions:
-1. backgroundImage includes: "default" (if you can not find matched backgrounds)${getAllBackgrounds()}
+1. backgroundImage includes: "default" (if you can not find matched backgrounds)${getAllBackgroundImages()}
 
 Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
@@ -923,8 +933,12 @@ JSON format:
 DO NOT REPLY IN THE MARKDOWN FORMAT!!!`;
 }
 
-function getAllBackgrounds() {
+function getAllBackgroundImages() {
   return backgroundImages.map((fileName) => `; ${fileName}`).join("");
+}
+
+function getAllProfileImages() {
+  return profileImages.map((fileName) => `; ${fileName}`).join("");
 }
 
 async function loadBackgroundImages() {
@@ -939,6 +953,21 @@ async function loadBackgroundImages() {
     backgroundImages = Array.isArray(data.images) ? data.images : [];
   } catch (error) {
     console.error("Failed to load background images:", error.message);
+  }
+}
+
+async function loadProfileImages() {
+  try {
+    const response = await fetch("/api/profile-images");
+    const responseText = await response.text();
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = responseText ? JSON.parse(responseText) : {};
+    profileImages = Array.isArray(data.images) ? data.images : [];
+  } catch (error) {
+    console.error("Failed to load profile images:", error.message);
   }
 }
 
@@ -979,12 +1008,18 @@ function confirmQuest() {
 
 let isCustomCharacter = false;
 
-// select a character (from 1 to 3)
+// select a character (from 1 to 4)
 function selectCharacter(characterNumber, options = {}) {
 
   // custom character
   if (characterNumber == 4) {
+
     isCustomCharacter = true;
+
+    // init character profile image
+    if (profileImagesDisplayingIndex === -1) changeCustomProfileImage();
+
+    // apply user settings
     if (elements.characterName.value) {
       characters[4].name = elements.characterName.value;
     }
@@ -1002,6 +1037,8 @@ function selectCharacter(characterNumber, options = {}) {
     if (elements.characterDesc.value) {
       characters[4].description = elements.characterDesc.value;
     }
+
+    characters[4].profileImage = profileImages[profileImagesDisplayingIndex];
   }
 
   // get current character
@@ -1018,26 +1055,33 @@ function selectCharacter(characterNumber, options = {}) {
   gameState.playerStatus = character.playerStatus;
   gameState.skills = character.skills;
   gameState.inventory = character.inventory;
+  gameState.ui.profileImage = character.profileImage;
   elements.characterBlurb.textContent = character.blurb;
-  elements.characterProfile.className = `character-profile ${character.profileClass}`;
 
   // update UI
   if (options.reveal !== false) {
     showElement(elements.characterBlurb);
     showElement(elements.characterProfile);
   }
+
+  // elements in custom character
   if (characterNumber == 4) {
     hideElement(elements.characterBlurb);
-    showElement(document.getElementById("custom-character"));
+    showElement(elements.customCharacter);
+    showElement(elements.characterProfileNumber);
+    elements.characterProfile.addEventListener("click", changeCustomProfileImage);
   } else {
     isCustomCharacter = false;
     showElement(elements.characterBlurb);
-    hideElement(document.getElementById("custom-character"));
+    hideElement(elements.customCharacter);
+    hideElement(elements.characterProfileNumber);
+    elements.characterProfile.removeEventListener("click", changeCustomProfileImage);
   }
 
   // update UI
   setSelectedButton(characterButtons, characterNumber - 1);
   renderHealth();
+  changeProfileImageTo(character.profileImage);
 
   // update prompt
   updateSystemPrompt();
@@ -1102,11 +1146,11 @@ function updateChoices(responseText) {
   gameState.choiceTypes[0] = choicePayload.choice1type;
   gameState.choiceTypes[1] = choicePayload.choice2type;
   gameState.choiceTypes[2] = choicePayload.choice3type;
-  gameState.ui = choicePayload.ui;
+  gameState.ui.backgroundImage = choicePayload.ui.backgroundImage;
   gameState.puzzleMode = choicePayload.puzzleMode;
 
   // update UI
-  changeBackgroundTo(gameState.ui.backgroundImage);
+  changeBackgroundImageTo(gameState.ui.backgroundImage);
 
   // check for game over
   if (choicePayload.gameOver === true || choicePayload.gameOver === "true") {
@@ -1431,7 +1475,6 @@ function triggerWorldInfo(request) {
     Object.values(gameState.info).forEach((item) => {
       for (let i = 0; i < item.triggers.length; i++) {
         if (request.includes(item.triggers[i])) {
-          console.warn("triggered worldinfo: " + item.triggers[i] + " Content:" + item.content);
           request += item.content + "\n\n";
           break;
         }
@@ -1629,7 +1672,7 @@ function setButtonEvents() {
     );
     hideElement(elements.actionForm);
 
-    setChatHtml(renderCharacterPanel());
+    renderCharacterPanel();
   });
 
   elements.actionForm.addEventListener("submit", (event) => {
@@ -1650,12 +1693,35 @@ function setButtonEvents() {
   });
 }
 
-function changeBackgroundTo(img) {
+// change background image
+function changeBackgroundImageTo(img) {
   if (img === "default") {
     document.body.style.backgroundImage = "none";
   } else {
     document.body.style.backgroundImage = `url(imgs/background/${img})`;
   }
+}
+
+// change profile image
+function changeProfileImageTo(img) {
+  if (img === "default") {
+    elements.characterProfile.style.backgroundImage = "none";
+  } else {
+    elements.characterProfile.style.backgroundImage = `url(imgs/profile/${img})`;
+  }
+}
+
+// change custom character profile image
+function changeCustomProfileImage() {
+
+  // update displaying index
+  profileImagesDisplayingIndex++;
+  profileImagesDisplayingIndex = profileImagesDisplayingIndex >= profileImages.length ? 0 : profileImagesDisplayingIndex;
+  gameState.ui.profileImage = profileImages[profileImagesDisplayingIndex];
+
+  // update UI
+  changeProfileImageTo(gameState.ui.profileImage);
+  elements.characterProfileNumber.innerText = `Profile ${(profileImagesDisplayingIndex + 1)} / ${profileImages.length}`;
 }
 
 socket.on("connect", () => {
@@ -1750,6 +1816,7 @@ socket.on("data_response", (message) => {
 // initialize the chat page
 async function initializePage() {
   await loadBackgroundImages();
+  await loadProfileImages();
 
   // setup eventListeners
   setButtonEvents();
