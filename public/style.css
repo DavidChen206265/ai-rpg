@@ -292,7 +292,7 @@ button:disabled {
   margin-top: 14px;
 }
 
-.character-profile {
+#character-profile {
   min-height: 120px;
   min-width: 120px;
   aspect-ratio: 1 / 1; 
@@ -308,18 +308,6 @@ button:disabled {
   min-height: 120px;
   border-radius: 8px;
   background: #365778;
-}
-
-.character-profile.profile-wizard {
-  background-image: url("imgs/profile/profile-wizard.png");
-}
-
-.character-profile.profile-ranger {
-  background-image: url("imgs/profile/profile-ranger.png");
-}
-
-.character-profile.profile-warrior {
-  background-image: url("imgs/profile/profile-warrior.png");
 }
 
 .health-meter {
@@ -430,18 +418,6 @@ button:disabled {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-}
-
-.character-panel-avatar.profile-wizard {
-  background-image: url("imgs/profile/profile-wizard.png");
-}
-
-.character-panel-avatar.profile-ranger {
-  background-image: url("imgs/profile/profile-ranger.png");
-}
-
-.character-panel-avatar.profile-warrior {
-  background-image: url("imgs/profile/profile-warrior.png");
 }
 
 .character-panel-kicker,
@@ -670,7 +646,7 @@ button:disabled {
     width: 100%;
   }
 
-  .character-profile {
+  #character-profile {
     min-height: 86px;
     min-width: 86px;
     aspect-ratio: 1 / 1; 

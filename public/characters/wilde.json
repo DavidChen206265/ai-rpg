@@ -1,6 +1,6 @@
 {
   "name": "Wilde",
-  "profileClass": "profile-ranger",
+  "profileImage": "profile-ranger.png",
   "description": "Wilde, a wily ranger. They are highly dexterous and nimble, and are well suited to acrobatic maneuvers. They only have a very limited use of magic, able to use only the simplest nature spells and none else. While they are nimble they aren't frail, and can hold their own in one-on-one combat. They have 15 hit points total. They start with light leather armor, a bow, arrows, and a small dagger in their boot.",
   "blurb": "Wilde - a nature-loving ranger. They are acrobatic and nimble, and can cast simple nature spells to coax plants and animals to aid them.",
   "playerStatus": {

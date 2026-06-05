@@ -1,6 +1,6 @@
 {
   "name": "Example Character Name",
-  "profileClass": "profile-wizard",
+  "profileImage": "profile-wizard.png",
   "description": "The prompt that will be sent to AI every single conversation.",
   "blurb": "",
   "playerStatus": {
