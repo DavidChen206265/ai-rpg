@@ -1,3 +1,14 @@
+// load the service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').then(function(registration) {
+      console.log('Service Worker registered with scope:', registration.scope);
+    }, function(error) {
+      console.log('Service Worker registration failed:', error);
+    });
+  });
+}                    
+
 const AUTH_TOKEN_KEY = "ai_rpg_token";
 const AUTH_USER_KEY = "ai_rpg_user";
 const ACTIVE_SAVE_KEY = "ai_rpg_active_save";
