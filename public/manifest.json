@@ -1,12 +1,12 @@
 {
-  "id": "/AI-RPG/",
+  "id": "/",
   "short_name": "AIRPG",
   "name": "AI RPG",
-  "description": "A route finder using free APIs.",
+  "description": "A Socket.IO powered AI fantasy adventure game.",
   "icons": [
     {
-      "src": "/imgs/favicon.png",
-      "sizes": "512x512",
+      "src": "/imgs/icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
@@ -14,29 +14,35 @@
       "src": "/imgs/favicon.png",
       "sizes": "512x512",
       "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/imgs/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "start_url": "https://rpg.davidchen.me",
-  "scope":"https://rpg.davidchen.me",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#000000",
-  "background_color": "#ffffff",
+  "theme_color": "#14141a",
+  "background_color": "#f4efe6",
   "screenshots": [
     {
-      "src": "imgs/screenshots/Screenshot1.png",
+      "src": "/imgs/screenshots/Screenshot1.png",
       "sizes": "2924x1676",
       "type": "image/png",
       "form_factor": "wide",
       "purpose": "any"
     },
     {
-      "src": "imgs/screenshots/Screenshot2.png",
+      "src": "/imgs/screenshots/Screenshot2.png",
       "sizes": "800x1522",
       "type": "image/png",
+      "form_factor": "narrow",
       "purpose": "any"
     }
-]
-
+  ]
 }

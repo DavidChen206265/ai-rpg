@@ -7,7 +7,7 @@
     "start": "node server.js",
     "deploy": "./deploy.sh",
     "setup-db": "node setup-db.js",
-    "check": "node --check server.js && node --check public/home.js && node --check public/login.js && node --check public/chat.js"
+    "check": "node --check server.js && node --check public/home.js && node --check public/login.js && node --input-type=module --check < public/chat.js && node --check public/pwa.js && node --check public/sw.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
