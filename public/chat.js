@@ -55,6 +55,8 @@ const elements = {
   healthInput: document.getElementById("health-input"),
   manaInput: document.getElementById("mana-input"),
   characterDesc: document.getElementById("desc-input"),
+  customQuest: document.getElementById("custom-quest"),
+  questPromptInput: document.getElementById("quest-prompt-input"),
 };
 
 const choiceButtons = [
@@ -973,13 +975,25 @@ async function loadProfileImages() {
   }
 }
 
-// select a quest (from 1 to 3)
+// select a quest (from 1 to 4)
 function selectQuest(questNumber, options = {}) {
   const quest = quests[questNumber];
   if (!quest) {
     console.error("[Error] There is no quest " + questNumber + ".");
     alert("[Error] There is no quest " + questNumber + ".");
     return;
+  }
+
+  // custom quest 
+  if (questNumber === 4) {
+
+    // update UI
+    showElement(elements.customQuest);
+
+    // use custom quest prompt
+    if (elements.questPromptInput) quest.prompt = elements.questPromptInput.value;
+  } else {
+    hideElement(elements.customQuest);
   }
 
   // update gameState
