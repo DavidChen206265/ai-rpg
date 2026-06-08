@@ -975,8 +975,26 @@ async function loadProfileImages() {
   }
 }
 
+let isCustomQuest = false;
+
 // select a quest (from 1 to 4)
 function selectQuest(questNumber, options = {}) {
+  
+  // custom quest 
+  if (questNumber === 4) {
+
+    isCustomQuest = true;
+
+    // update UI
+    showElement(elements.customQuest);
+
+    // add in custom quest prompt
+    quests[4].prompt += elements.questPromptInput.value;
+  } else {
+    isCustomQuest = false;
+    hideElement(elements.customQuest);
+  }
+
   const quest = quests[questNumber];
   if (!quest) {
     console.error("[Error] There is no quest " + questNumber + ".");
@@ -984,20 +1002,8 @@ function selectQuest(questNumber, options = {}) {
     return;
   }
 
-  // custom quest 
-  if (questNumber === 4) {
-
-    // update UI
-    showElement(elements.customQuest);
-
-    // use custom quest prompt
-    if (elements.questPromptInput) quest.prompt = elements.questPromptInput.value;
-  } else {
-    hideElement(elements.customQuest);
-  }
-
   // update gameState
-  gameState.questInfo = quest.prompt;
+  gameState.questInfo = quest.prompt; 
   gameState.selectedQuestName = quest.name;
   gameState.relationships = quest.relationships;
   gameState.achievements = quest.achievements;
@@ -1455,8 +1461,11 @@ function sendMessage() {
 
   if (gameState.chatHistory.length === 0) {
     inputText = "Game Start";
-    if (isCustomCharacter == true) {
+    if (isCustomCharacter) {
       selectCharacter(4);
+    } 
+    if (isCustomQuest) {
+      selectQuest(4);
     }
   }
 
