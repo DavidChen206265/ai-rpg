@@ -815,6 +815,8 @@ When generating quests and worlds, there are four guidelines that should be alwa
 
 The choice / custom input's difficulty must be calculated by relative player status and all applicable modifiers!
 
+When applicable, make sure to suggest the use of the user's active skills in one of the choices!
+
 Changed status: whenever you modify playerStatus, relationships, skills, inventory, or when the player achieves an achievement, show a brief log each of the changes to remind the player.
 e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [achievementName]} {debuff: [slow]}
 
@@ -1744,7 +1746,7 @@ function changeCustomProfileImage() {
 
   // update UI
   changeProfileImageTo(gameState.ui.profileImage);
-  elements.characterProfileNumber.innerText = `Profile ${(profileImagesDisplayingIndex + 1)} / ${profileImages.length}`;
+  elements.characterProfileNumber.innerText = `Profile ${(profileImagesDisplayingIndex + 1)} / ${profileImages.length} (Tap profile to change)`;
 }
 
 socket.on("connect", () => {
