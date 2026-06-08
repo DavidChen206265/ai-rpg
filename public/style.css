@@ -401,7 +401,7 @@ button:disabled {
 
 .character-panel-header {
   display: grid;
-  grid-template-columns: 76px 1fr;
+  grid-template-columns: 76px minmax(0, 1fr);
   gap: 14px;
   align-items: center;
   padding: 14px;
@@ -411,7 +411,10 @@ button:disabled {
 }
 
 .character-panel-avatar {
+  width: 76px;
+  min-width: 76px;
   min-height: 76px;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   background-color: #365778;
 
@@ -420,10 +423,15 @@ button:disabled {
   background-repeat: no-repeat;
 }
 
+#character-panel-header-desc {
+  min-width: 0;
+}
+
 .character-panel-kicker,
 .character-panel-header h2,
 .character-panel-header p {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .character-panel-kicker {
@@ -656,6 +664,12 @@ button:disabled {
   .character-status-list,
   .character-panel-grid {
     grid-template-columns: 1fr;
+  }
+
+  .character-panel-avatar {
+    width: 86px;
+    min-width: 86px;
+    min-height: 86px;
   }
 }
 

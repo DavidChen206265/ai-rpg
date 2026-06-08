@@ -621,8 +621,8 @@ function renderCharacterPanel() {
   let chatHtmlToSet = `
     <div class="character-panel">
       <div class="character-panel-header">
-        <div id="character-profile" style="background-image: url(imgs/profile/${gameState.ui.profileImage});" aria-hidden="true"></div>
-        <div>
+        <div class="character-panel-avatar" style="background-image: url(imgs/profile/${gameState.ui.profileImage});" aria-hidden="true"></div>
+        <div id="character-panel-header-desc">
           <p class="character-panel-kicker">Character Panel</p>
           <h2>${escapeHtml(gameState.selectedCharacterName)}</h2>
           <p>${escapeHtml(gameState.selectedQuestName)}</p>
