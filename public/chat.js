@@ -1847,7 +1847,7 @@ socket.on("data_response", (message) => {
 socket.on("compressed_memory_response", (message) => {
   if (message.startsWith("[Error]")) {
     appendChatHtml(
-      `<div class="msg-ai"><strong>Data AI:</strong> ${message}</div>`,
+      `<div class="msg-ai"><strong>Memory Compression:</strong> ${message}</div>`,
     );
     console.error(message);
     alert(message);
