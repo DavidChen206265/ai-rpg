@@ -50,7 +50,7 @@ button,
   padding: 10px 16px;
   border: 0;
   border-radius: 6px;
-  background: var(--primary);
+  background-color: var(--primary);
   color: #ffffff;
   cursor: pointer;
 }
@@ -58,7 +58,7 @@ button,
 button:hover:not(:disabled),
 .button-link:hover,
 .save-card:hover {
-  background: var(--primary-dark);
+  background-color: var(--primary-dark);
 }
 
 button:disabled {
@@ -103,7 +103,6 @@ button:disabled {
 
 #game-title {
   background-color: var(--bg);
-  border-radius: 5px;
   padding: 10px;
 }
 
@@ -132,7 +131,7 @@ button:disabled {
 .chat-window {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel);
+  background-color: var(--panel);
   box-shadow: var(--shadow);
 }
 
@@ -150,14 +149,14 @@ button:disabled {
   display: grid;
   gap: 10px;
   text-align: left;
-  background: #365778;
+  background-color: #365778;
 }
 
 .save-main {
   display: grid;
   gap: 4px;
   text-align: left;
-  background: transparent;
+  background-color: transparent;
   padding: 0;
   min-height: 0;
 }
@@ -170,11 +169,11 @@ button:disabled {
 .save-actions button {
   min-height: 34px;
   padding: 6px 10px;
-  background: #4b5565;
+  background-color: #4b5565;
 }
 
 .save-actions button:hover {
-  background: var(--primary-dark);
+  background-color: var(--primary-dark);
 }
 
 .save-card span,
@@ -198,11 +197,11 @@ button:disabled {
 
 .tab-button {
   min-height: 38px;
-  background: #4b5565;
+  background-color: #4b5565;
 }
 
 .tab-button.is-active {
-  background: var(--primary);
+  background-color: var(--primary);
 }
 
 .auth-form {
@@ -220,7 +219,7 @@ button:disabled {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 6px;
-  background: #ffffff;
+  background-color: #ffffff;
 }
 
 .status-text.is-error {
@@ -252,21 +251,21 @@ button:disabled {
 }
 
 .option-button {
-  background: var(--primary);
+  background-color: var(--primary);
 }
 
 .option-button.is-selected {
-  background: var(--primary-dark);
+  background-color: var(--primary-dark);
 }
 
 /* chat action buttons (bottom row) */
 .chat-action {
-  background: #555;
+  background-color: #555;
   color: #fff;
 }
 
 .chat-action.is-selected {
-  background: var(--primary-dark);
+  background-color: var(--primary-dark);
 }
 
 .selection-copy {
@@ -707,5 +706,6 @@ button:disabled {
 .stone-border{
   border:15px transparent solid;
   border-image: url('/imgs/borderimg.png') 15 round;
-  border-radius:20px;
+  border-radius:0px;
+  background-clip: padding-box;
 }

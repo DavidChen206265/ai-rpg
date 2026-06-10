@@ -16,25 +16,25 @@
 <body style="background-image: url(/imgs/main-background.jpg)">
   <main class="game-shell">
     <header class="game-header">
-      <h1 id="game-title">AI Fantasy Adventure</h1>
+      <h1 id="game-title" class="stone-border">AI Fantasy Adventure</h1>
       <div id="page-actions">
-        <a class="button-link" href="/">Home</a>
-        <a id="auth-action" class="button-link" href="/login.html">Login / Register</a>
+        <a class="button-link stone-border" href="/">Home</a>
+        <a id="auth-action" class="button-link stone-border" href="/login.html">Login / Register</a>
       </div>
     </header>
 
-    <div id="quest-select" class="setup-panel">
+    <div id="quest-select" class="setup-panel stone-border">
       <div class="button-grid">
-        <button id="quest-1" class="option-button is-selected" type="button">
+        <button id="quest-1" class="option-button is-selected stone-border" type="button">
           Maze
         </button>
-        <button id="quest-2" class="option-button" type="button">
+        <button id="quest-2" class="option-button stone-border" type="button">
           Ninja Palace
         </button>
-        <button id="quest-3" class="option-button" type="button">
+        <button id="quest-3" class="option-button stone-border" type="button">
           Timelost Castle
         </button>
-        <button id="free-play" class="option-button" type="button">
+        <button id="free-play" class="option-button stone-border" type="button">
           Free Play
         </button>
       </div>
@@ -42,31 +42,31 @@
       <div id="custom-quest" class="is-hidden">
         <input type="text" id="quest-prompt-input" placeholder="(Optional) Custom quest prompt">
       </div>
-      <button id="confirm-quest" class="primary-action is-hidden" type="button">
+      <button id="confirm-quest" class="primary-action is-hidden stone-border" type="button">
         Select Quest
       </button>
     </div>
 
 
 
-    <div id="character-select" class="setup-panel is-hidden">
+    <div id="character-select" class="setup-panel is-hidden stone-border">
       <div class="button-grid">
-        <button id="character-1" class="option-button" type="button">
+        <button id="character-1" class="option-button stone-border" type="button">
           Fitzgerald
         </button>
-        <button id="character-2" class="option-button is-selected" type="button">
+        <button id="character-2" class="option-button is-selected stone-border" type="button">
           Wilde
         </button>
-        <button id="character-3" class="option-button" type="button">
+        <button id="character-3" class="option-button stone-border" type="button">
           Burgess
         </button>
-        <button id="character-4" class="option-button" type="button">
+        <button id="character-4" class="option-button stone-border" type="button">
           Custom
         </button>
       </div>
 
       <div class="character-details">
-        <div id="character-profile" class="character-profile is-hidden" aria-hidden="true"></div>
+        <div id="character-profile" class="character-profile is-hidden stone-border" aria-hidden="true"></div>
         <p id="character-blurb" class="selection-copy is-hidden">WIP</p>
         <div id="custom-character" class=" is-hidden">
           <input type="text" id="name-input" placeholder="Character Name">
@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <button id="start-game" class="primary-action is-hidden" type="button">
+    <button id="start-game" class="primary-action is-hidden stone-border" type="button">
       Start
     </button>
 
@@ -87,35 +87,35 @@
       <div id="health-label" class="health-label">10/10</div>
     </div>
 
-    <div id="chat-window" class="chat-window" aria-live="polite">
+    <div id="chat-window" class="chat-window stone-border" aria-live="polite">
       Connecting...
     </div>
 
     <form id="action-form" class="action-form is-hidden">
-      <button id="choice-1" class="choice-button" type="button">
+      <button id="choice-1" class="choice-button stone-border" type="button">
         Choice one
       </button>
-      <button id="choice-2" class="choice-button" type="button">
+      <button id="choice-2" class="choice-button stone-border" type="button">
         Choice two
       </button>
-      <button id="choice-3" class="choice-button" type="button">
+      <button id="choice-3" class="choice-button stone-border" type="button">
         Choice three
       </button>
-      <input id="user-input" type="text" placeholder="Enter action" autocomplete="off">
-      <button id="send-action" class="primary-action" type="submit">
+      <input id="user-input" type="text" placeholder="Enter action" autocomplete="off" class="stone-border">
+      <button id="send-action" class="primary-action stone-border" type="submit">
         Send
       </button>
     </form>
 
-    <div id="chat-actions" class="setup-panel is-hidden">
+    <div id="chat-actions" class="setup-panel is-hidden stone-border">
 
-      <button id="current-conversation" class="chat-action is-selected" type="button">
+      <button id="current-conversation" class="chat-action is-selected stone-border" type="button">
         Conversation
       </button>
-      <button id="character-panel" class="chat-action" type="button">
+      <button id="character-panel" class="chat-action stone-border" type="button">
         Character panel
       </button>
-      <button id="show-chat-history" class="chat-action" type="button">
+      <button id="show-chat-history" class="chat-action stone-border" type="button">
         Chat history
       </button>
     </div>
