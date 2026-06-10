@@ -110,14 +110,14 @@ async function loadSaves() {
   elements.saveList.innerHTML = saves
     .map(
       (save) => `
-        <div class="save-card">
+        <div class="save-card stone-border">
           <button class="save-main" type="button" data-open-save="${save._id}" data-save-title="${save.title}">
             <strong>${save.title}</strong>
             <span>Last conversation: ${formatDate(save.updatedAt || save.createdAt)}</span>
           </button>
           <div class="save-actions">
-            <button type="button" data-rename-save="${save._id}" data-save-title="${save.title}">Rename</button>
-            <button type="button" data-delete-save="${save._id}">Delete</button>
+            <button type="button" class="stone-border" data-rename-save="${save._id}" data-save-title="${save.title}">Rename</button>
+            <button type="button" class="stone-border" data-delete-save="${save._id}">Delete</button>
           </div>
         </div>
       `

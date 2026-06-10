@@ -12,20 +12,24 @@
   <link rel="apple-touch-icon" href="/imgs/icons/icon-192.png">
   <script defer src="/pwa.js"></script>
 </head>
-<body>
+<body style="background-image: url(/imgs/main-background.jpg)">
   <main class="page-shell">
     <header class="page-header">
       <h1>AI RPG</h1>
       <nav class="page-actions">
-        <a id="auth-action" class="button-link" href="/login.html">Login / Register</a>
-        <a id="new-chat" class="button-link" href="/chat.html">New Chat</a>
+        <a id="auth-action" class="button-link stone-border" href="/login.html">Login / Register</a>
       </nav>
     </header>
 
-    <section class="panel">
+    <div id="start-panel">
+      <p>Start Your Adventure!</p>
+      <a id="new-chat" class="button-link stone-border" href="/chat.html">New Game</a>
+    </div>
+
+    <section class="panel stone-border">
       <div class="panel-head">
         <h2>Chat Records</h2>
-        <button id="refresh-saves" type="button">Refresh</button>
+        <button id="refresh-saves" type="button" class="stone-border">Refresh</button>
       </div>
       <div id="save-list" class="save-list">
         <p class="empty-state">Please log in to create or load saves.</p>
