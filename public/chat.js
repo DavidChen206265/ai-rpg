@@ -57,6 +57,9 @@ const elements = {
   characterDesc: document.getElementById("desc-input"),
   customQuest: document.getElementById("custom-quest"),
   questPromptInput: document.getElementById("quest-prompt-input"),
+  manaFill: document.getElementById("mana-fill"),
+  manaLabel: document.getElementById("mana-label"),
+  manaContainer: document.getElementById("mana-container"),
 };
 
 const choiceButtons = [
@@ -1107,6 +1110,7 @@ function selectCharacter(characterNumber, options = {}) {
   // update UI
   setSelectedButton(characterButtons, characterNumber - 1);
   renderHealth();
+  renderMana();
   changeProfileImageTo(character.profileImage);
 
   // update prompt
@@ -1159,6 +1163,16 @@ function stripChoicePayload(responseText) {
   );
 }
 
+function renderMana() {
+  const safeMana = Math.max(gameState.playerStatus.mana.current, 0);
+  const manaPercent = safeMana / gameState.playerStatus.mana.max;
+  const manaMovePercent = 100 - 100 * manaPercent;
+
+  elements.manaFill.style.transform = `translateX(-${manaMovePercent}%)`;
+  elements.manaLabel.textContent = `${safeMana}/${gameState.playerStatus.mana.max}`;
+  elements.manaLabel.classList.toggle("is-dark", manaMovePercent > 40);
+}
+
 // update gameState
 function updateChoices(responseText) {
   const choicePayload = extractChoicePayload(responseText);
@@ -1198,6 +1212,8 @@ function updateChoices(responseText) {
   // update health
   gameState.playerStatus.health.current = choicePayload.playerStatus.health.current;
   renderHealth();
+  gameState.playerStatus.mana.current = choicePayload.playerStatus.mana.current;
+  renderMana();
 
   // update currentProgress
   if (choicePayload.progression === 1 || choicePayload.progression === "1") {
@@ -1234,6 +1250,8 @@ function updateChoices(responseText) {
 
   return stripChoicePayload(responseText);
 }
+
+
 
 // clear all responses and make choices clickable
 function resetStreamState() {
@@ -1356,6 +1374,7 @@ function enterGameEndState() {
   hideElement(elements.characterSelect);
   hideElement(elements.startGame);
   showElement(elements.healthContainer);
+  showElement(elements.manaContainer);
   showElement(elements.chatWindow);
   showElement(elements.chatActions);
   setChoiceControlsDisabled(true);
@@ -1376,6 +1395,7 @@ function enterGameEndState() {
 function restoreInteractiveChat() {
   showElement(elements.chatWindow);
   showElement(elements.healthContainer);
+  showElement(elements.manaContainer);
   showElement(elements.actionForm);
   showElement(elements.chatActions);
   setChoiceControlsDisabled(false);
@@ -1457,6 +1477,7 @@ function sendMessage() {
 
   // update UI
   showElement(elements.healthContainer);
+  showElement(elements.manaContainer);
   hideElement(elements.startGame);
   hideElement(elements.characterSelect);
   showElement(elements.actionForm);
@@ -1586,6 +1607,7 @@ async function loadActiveSave() {
   // update UI
   updateSystemPrompt();
   renderHealth();
+  renderMana();
   renderChoices();
 
   // check for game over
