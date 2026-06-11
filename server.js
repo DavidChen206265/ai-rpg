@@ -478,7 +478,7 @@ async function compressMemory(socket, memories) {
   const prompt = [
     "Summarize and organize the following memory for AI to read in a few short and concise sentences.",
     "Include settings, time, location, important events, interactions, and characters.",
-    `[Memories]: ${memories}`,
+    `[Memories]: ${JSON.stringify(memories)}`,
   ].join("\n");
 
   try {
