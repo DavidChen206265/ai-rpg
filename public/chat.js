@@ -57,6 +57,9 @@ const elements = {
   characterDesc: document.getElementById("desc-input"),
   customQuest: document.getElementById("custom-quest"),
   questPromptInput: document.getElementById("quest-prompt-input"),
+  manaFill: document.getElementById("mana-fill"),
+  manaLabel: document.getElementById("mana-label"),
+  manaContainer: document.getElementById("mana-container"),
 };
 
 const choiceButtons = [
@@ -817,6 +820,10 @@ The choice / custom input's difficulty must be calculated by relative player sta
 
 When applicable, make sure to suggest the use of the user's active skills in one of the choices!
 
+Do not be afraid to damage or kill the user! If the user does something stupid in battle, don't be afraid to damage them for it. If the user does something incredibly dumb that would kill them, like jump off a cliff, you are allowed to deal 99 damage to instantly kill them. Without the stakes of potential death, the game isn't as fun. However, don't damage the player for minor details, like a papercut. use your judgement for when the user should actually take damage.
+
+If the user's action is something along the lines of "do the right thing", something vague that doesn't actually describe an action, do not let this action succeed. The action the user does should be an actual action, not a vague description. This applied for puzzles as well, a response like "solve the puzzle" will NOT actually solve the puzzle. The user actually needs to give the solution to the puzzle to solve the puzzle.
+
 Changed status: whenever you modify playerStatus, relationships, skills, inventory, or when the player achieves an achievement, show a brief log each of the changes to remind the player.
 e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [achievementName]} {debuff: [slow]}
 
@@ -828,7 +835,7 @@ JSON update instructions:
 5. you must maintain the format for each field;
 6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
 7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless some type of enhancement/debuff magic or specialized training is used, these values should not change between prompts. The sum total of the initial values at the start of the game should equal 3, so the character is good at some things and bad at others. At least one value should be negative. 
-8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. 
+8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. Also, when the user is in a puzzle, the puzzle itself should be always given to the user each prompt until the puzzle is completed.
 9. When the user moves forward a room, set progression to 1. If the user goes back a room, set progression to -1. If the user does not move rooms, progression should be 0. Do not let the user move more than 1 room forward at a time.
 10. The average difficulty of a choice should be 13. Because the stats of the user are added to their roll, do not decrease the difficulty of choices if the user is good at them, or increase the difficulty if they are bad at them. This is already handled in the code outside this prompt.
 
@@ -1103,6 +1110,7 @@ function selectCharacter(characterNumber, options = {}) {
   // update UI
   setSelectedButton(characterButtons, characterNumber - 1);
   renderHealth();
+  renderMana();
   changeProfileImageTo(character.profileImage);
 
   // update prompt
@@ -1155,6 +1163,16 @@ function stripChoicePayload(responseText) {
   );
 }
 
+function renderMana() {
+  const safeMana = Math.max(gameState.playerStatus.mana.current, 0);
+  const manaPercent = safeMana / gameState.playerStatus.mana.max;
+  const manaMovePercent = 100 - 100 * manaPercent;
+
+  elements.manaFill.style.transform = `translateX(-${manaMovePercent}%)`;
+  elements.manaLabel.textContent = `${safeMana}/${gameState.playerStatus.mana.max}`;
+  elements.manaLabel.classList.toggle("is-dark", manaMovePercent > 40);
+}
+
 // update gameState
 function updateChoices(responseText) {
   const choicePayload = extractChoicePayload(responseText);
@@ -1194,6 +1212,8 @@ function updateChoices(responseText) {
   // update health
   gameState.playerStatus.health.current = choicePayload.playerStatus.health.current;
   renderHealth();
+  gameState.playerStatus.mana.current = choicePayload.playerStatus.mana.current;
+  renderMana();
 
   // update currentProgress
   if (choicePayload.progression === 1 || choicePayload.progression === "1") {
@@ -1230,6 +1250,8 @@ function updateChoices(responseText) {
 
   return stripChoicePayload(responseText);
 }
+
+
 
 // clear all responses and make choices clickable
 function resetStreamState() {
@@ -1352,6 +1374,7 @@ function enterGameEndState() {
   hideElement(elements.characterSelect);
   hideElement(elements.startGame);
   showElement(elements.healthContainer);
+  showElement(elements.manaContainer);
   showElement(elements.chatWindow);
   showElement(elements.chatActions);
   setChoiceControlsDisabled(true);
@@ -1372,6 +1395,7 @@ function enterGameEndState() {
 function restoreInteractiveChat() {
   showElement(elements.chatWindow);
   showElement(elements.healthContainer);
+  showElement(elements.manaContainer);
   showElement(elements.actionForm);
   showElement(elements.chatActions);
   setChoiceControlsDisabled(false);
@@ -1459,6 +1483,7 @@ function sendMessage() {
 
   // update UI
   showElement(elements.healthContainer);
+  showElement(elements.manaContainer);
   hideElement(elements.startGame);
   hideElement(elements.characterSelect);
   showElement(elements.actionForm);
@@ -1588,6 +1613,7 @@ async function loadActiveSave() {
   // update UI
   updateSystemPrompt();
   renderHealth();
+  renderMana();
   renderChoices();
 
   // check for game over
