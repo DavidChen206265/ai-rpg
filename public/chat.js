@@ -420,6 +420,39 @@ const thinkingTimer = setInterval(() => {
     didYouKnowTextsIndex = Math.floor(Math.random() * didYouKnowTexts.length);
     didYouKnowCounter = 0;
   }
+
+  // disable userInput & menu while AI is responding
+  if (streamState.state === "idle") {
+
+    // resume userInput
+    elements.userInput.disabled = false;
+
+    // chat actions
+    // currentConversation
+    chatActionButtons[chatActionButtonNames.currentConversation].addEventListener("click", showCurrentConversation);
+
+    // showChatHistory
+    chatActionButtons[chatActionButtonNames.showChatHistory].addEventListener("click", showChatHistory);
+
+    // characterPanel
+    chatActionButtons[chatActionButtonNames.characterPanel].addEventListener("click", showCharacterPanel);
+
+  } else {
+
+    // disable userInput
+    elements.userInput.disabled = true;
+
+    // chat actions
+    // always show currentConversation
+    showCurrentConversation();
+
+    // showChatHistory
+    chatActionButtons[chatActionButtonNames.showChatHistory].removeEventListener("click", showChatHistory);
+
+    // characterPanel
+    chatActionButtons[chatActionButtonNames.characterPanel].removeEventListener("click", showCharacterPanel);
+  }
+
 }, 1000);
 
 const UI_UPDATE_INTERVAL = 250; // ms
@@ -979,7 +1012,7 @@ let isCustomQuest = false;
 
 // select a quest (from 1 to 4)
 function selectQuest(questNumber, options = {}) {
-  
+
   // custom quest 
   if (questNumber === 4) {
 
@@ -1003,7 +1036,7 @@ function selectQuest(questNumber, options = {}) {
   }
 
   // update gameState
-  gameState.questInfo = quest.prompt; 
+  gameState.questInfo = quest.prompt;
   gameState.selectedQuestName = quest.name;
   gameState.relationships = quest.relationships;
   gameState.achievements = quest.achievements;
@@ -1469,7 +1502,7 @@ function sendMessage() {
     inputText = "Game Start";
     if (isCustomCharacter) {
       selectCharacter(4);
-    } 
+    }
     if (isCustomQuest) {
       selectQuest(4);
     }
@@ -1653,6 +1686,39 @@ function recoverLastConversation() {
   elements.chatWindow.scrollTo({ top: 0, behavior: "auto" });
 }
 
+// chatActionButtons eventListener helpers
+function showCurrentConversation() {
+  // update UI
+  setSelectedButton(
+    chatActionButtons,
+    chatActionButtonNames.currentConversation,
+  );
+
+  recoverLastConversation();
+}
+
+function showCharacterPanel() {
+  // update UI
+  setSelectedButton(
+    chatActionButtons,
+    chatActionButtonNames.characterPanel,
+  );
+  hideElement(elements.actionForm);
+
+  renderCharacterPanel();
+}
+
+function showChatHistory() {
+  // update UI
+  setSelectedButton(
+    chatActionButtons,
+    chatActionButtonNames.showChatHistory,
+  );
+  hideElement(elements.actionForm);
+
+  renderChatHistory();
+}
+
 // buttons
 function setButtonEvents() {
   elements.title.addEventListener("click", activateDevMode); // use dev mode
@@ -1665,46 +1731,13 @@ function setButtonEvents() {
 
   // chat actions
   // currentConversation
-  chatActionButtons[chatActionButtonNames.currentConversation].addEventListener(
-    "click",
-    () => {
-      // update UI
-      setSelectedButton(
-        chatActionButtons,
-        chatActionButtonNames.currentConversation,
-      );
-
-      recoverLastConversation();
-    },
-  );
+  chatActionButtons[chatActionButtonNames.currentConversation].addEventListener("click", showCurrentConversation);
 
   // showChatHistory
-  chatActionButtons[chatActionButtonNames.showChatHistory].addEventListener(
-    "click",
-    () => {
-      // update UI
-      setSelectedButton(
-        chatActionButtons,
-        chatActionButtonNames.showChatHistory,
-      );
-      hideElement(elements.actionForm);
-
-      renderChatHistory();
-    },
-  );
+  chatActionButtons[chatActionButtonNames.showChatHistory].addEventListener("click", showChatHistory);
 
   // characterPanel
-  chatActionButtons[chatActionButtonNames.characterPanel].addEventListener("click", () => {
-
-    // update UI
-    setSelectedButton(
-      chatActionButtons,
-      chatActionButtonNames.characterPanel,
-    );
-    hideElement(elements.actionForm);
-
-    renderCharacterPanel();
-  });
+  chatActionButtons[chatActionButtonNames.characterPanel].addEventListener("click", showCharacterPanel);
 
   elements.actionForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -1857,7 +1890,7 @@ socket.on("compressed_memory_response", (message) => {
     // update gameState and auto save
     gameState.eventMemory.clear();
     gameState.eventMemory.add(message);
-    
+
     // test
     console.warn(message);
 
