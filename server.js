@@ -330,6 +330,15 @@ io.on("connection", (socket) => {
       socket.emit("ai_stream", `[Error]: ${error.message}`);
     }
   });
+
+  socket.on("ask_memory_compression", async (memories) => {
+    try {
+      await compressMemory(socket, memories);
+    } catch (error) {
+      socket.emit("compressed_memory_response", `[Error]: ${error.message}`);
+    }
+    
+  })
 });
 
 // create connection to db
@@ -460,6 +469,26 @@ async function summarizeConversation(socket, currentInput, aiResponse) {
     socket.emit("data_response", data.choices[0].message.content);
   } catch (error) {
     socket.emit("data_response", `[Error]: ${error.message}`);
+  }
+}
+
+// memory compression AI
+async function compressMemory(socket, memories) {
+  
+  const prompt = [
+    "Summarize and organize the following memory for AI to read in a few short and concise sentences.",
+    "Include settings, time, location, important events, interactions, and characters.",
+    `[Memories]: ${JSON.stringify(memories)}`,
+  ].join("\n");
+
+  try {
+    const data = await postAiJson({
+      model: AI_API.mainModel,
+      messages: [{ role: "user", content: prompt }],
+    });
+    socket.emit("compressed_memory_response", data.choices[0].message.content);
+  } catch (error) {
+    socket.emit("compressed_memory_response", `[Error]: ${error.message}`);
   }
 }
 

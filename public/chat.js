@@ -1449,6 +1449,12 @@ function buildPrompt(inputText) {
     request += `[${memory}] \n\n`;
   }
 
+  // compress memory
+  // test
+  if (gameState.eventMemory.size >= 3) {
+    socket.emit("ask_memory_compression", gameState.eventMemory);
+  }
+
   // add last conversation
   request +=
     "\n\nLast Conversation: " +
@@ -1861,6 +1867,30 @@ socket.on("data_response", (message) => {
     setChoiceControlsDisabled(true);
   } else {
     setChoiceControlsDisabled(false);
+  }
+});
+
+// check for memory compression failure
+socket.on("compressed_memory_response", (message) => {
+  if (message.startsWith("[Error]")) {
+    appendChatHtml(
+      `<div class="msg-ai"><strong>Memory Compression:</strong> ${message}</div>`,
+    );
+    console.error(message);
+    alert(message);
+    loadActiveSave();
+  } else {
+    // update gameState and auto save
+    gameState.eventMemory.clear();
+    gameState.eventMemory.add(message);
+    
+    // test
+    console.warn(message);
+
+    saveCurrentGame().catch((error) => {
+      appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
+      console.error(error.message);
+    });
   }
 });
 
