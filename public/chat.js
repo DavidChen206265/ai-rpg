@@ -1426,7 +1426,8 @@ function buildPrompt(inputText) {
   }
 
   // compress memory
-  if (gameState.eventMemory.size >= 10) {
+  // test
+  if (gameState.eventMemory.size >= 3) {
     socket.emit("ask_memory_compression", gameState.eventMemory);
   }
 
@@ -1856,6 +1857,10 @@ socket.on("compressed_memory_response", (message) => {
     // update gameState and auto save
     gameState.eventMemory.clear();
     gameState.eventMemory.add(message);
+    
+    // test
+    console.warn(message);
+
     saveCurrentGame().catch((error) => {
       appendChatHtml(`<div class="msg-ai">[Error]: ${error.message}</div>`);
       console.error(error.message);

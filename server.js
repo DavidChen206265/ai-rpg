@@ -333,7 +333,7 @@ io.on("connection", (socket) => {
 
   socket.on("ask_memory_compression", async (memories) => {
     try {
-      await compressMemory(memories);
+      await compressMemory(socket, memories);
     } catch (error) {
       socket.emit("compressed_memory_response", `[Error]: ${error.message}`);
     }
@@ -473,7 +473,7 @@ async function summarizeConversation(socket, currentInput, aiResponse) {
 }
 
 // memory compression AI
-async function compressMemory(socket, memories, aiResponse) {
+async function compressMemory(socket, memories) {
   
   const prompt = [
     "Summarize and organize the following memory for AI to read in a few short and concise sentences.",
