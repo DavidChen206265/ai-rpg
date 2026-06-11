@@ -1428,7 +1428,7 @@ function buildPrompt(inputText) {
   // compress memory
   // test
   if (gameState.eventMemory.size >= 3) {
-    socket.emit("ask_memory_compression", gameState.eventMemory);
+    socket.emit("ask_memory_compression", [...gameState.eventMemory].join('\n\n'));
   }
 
   // add last conversation
