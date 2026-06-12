@@ -822,7 +822,9 @@ When applicable, make sure to suggest the use of the user's active skills in one
 
 Do not be afraid to damage or kill the user! If the user does something stupid in battle, don't be afraid to damage them for it. If the user does something incredibly dumb that would kill them, like jump off a cliff, you are allowed to deal 99 damage to instantly kill them. Without the stakes of potential death, the game isn't as fun. However, don't damage the player for minor details, like a papercut. use your judgement for when the user should actually take damage.
 
-If the user's action is something along the lines of "do the right thing", something vague that doesn't actually describe an action, do not let this action succeed. The action the user does should be an actual action, not a vague description. This applied for puzzles as well, a response like "solve the puzzle" will NOT actually solve the puzzle. The user actually needs to give the solution to the puzzle to solve the puzzle.
+If the user's action is something along the lines of "do the right thing", something vague that doesn't actually describe an action, do not let this action succeed. The action the user does should be an actual action, not a vague description. This applied for puzzles as well, a response like "solve the puzzle" will NOT actually solve the puzzle. The user actually needs to give the solution to the puzzle to solve the puzzle. DO NOT TELL THE USER THIS IN THE PROMPTS. 
+
+Do not use bold or italic text in your responses. The formatting does not support it. Do not mention this to the user.
 
 Changed status: whenever you modify playerStatus, relationships, skills, inventory, or when the player achieves an achievement, show a brief log each of the changes to remind the player.
 e.g. {health -1} {new skill: [skillName]} {used item: [itemName]} {achieved: [achievementName]} {debuff: [slow]}
@@ -835,14 +837,15 @@ JSON update instructions:
 5. you must maintain the format for each field;
 6. for choice types, (choice1type, choice2type, choice3type) it must be one of the following strings: "strength", "agility", "intelligence" or "magic", depending on what type of action the choice is. (intelligence is more for problem solving while magic is more for spells)
 7. for strength, agility, intelligence, and magic, choose an integer ranging from -5 to 5, with -5 being really bad at the action and 5 being really good at the action. Unless some type of enhancement/debuff magic or specialized training is used, these values should not change between prompts. The sum total of the initial values at the start of the game should equal 3, so the character is good at some things and bad at others. At least one value should be negative. 
-8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. Also, when the user is in a puzzle, the puzzle itself should be always given to the user each prompt until the puzzle is completed.
+8. When the user is in a puzzle, puzzleMode should be true, and false when the user is not in a puzzle. It is important to note this is not a string, but a boolean true or a boolean false. Also, when the user is in a puzzle, the puzzle itself should be always given to the user each prompt until the puzzle is completed. Puzzlemode should only be true when the user has been given the unsolved puzzle in the prompt.
 9. When the user moves forward a room, set progression to 1. If the user goes back a room, set progression to -1. If the user does not move rooms, progression should be 0. Do not let the user move more than 1 room forward at a time.
 10. The average difficulty of a choice should be 13. Because the stats of the user are added to their roll, do not decrease the difficulty of choices if the user is good at them, or increase the difficulty if they are bad at them. This is already handled in the code outside this prompt.
 
 UI update instructions:
 1. backgroundImage includes: "default" (if you can not find matched backgrounds)${getAllBackgroundImages()}
+2. backgroundImage CANNOT BE ANYTHING BUT WHAT IS GIVEN. DO NOT MAKE UP ANY NEW IMAGES.
 
-Your response MUST be in this format: Current time, location + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
+Your response MUST be in this format: Current time (ingame, not real-life current time), location (fantasy location, not real-life location) + (new paragraph) main descriptions(story's progress) + (new paragraph) changed status + "${CHOICES_START_TAG}" + valid JSON of the current game status + "${CHOICES_END_TAG}"
 
 JSON format:
 {
@@ -1058,7 +1061,7 @@ function selectCharacter(characterNumber, options = {}) {
       characters[4].playerStatus.health.current = elements.healthInput.value;
     }
 
-    if (elements.manaInput.value && elements.manaInput.value >= 10 && elements.manaInput.value <= 25) {
+    if (elements.manaInput.value && elements.manaInput.value >= 0 && elements.manaInput.value <= 25) {
       characters[4].playerStatus.mana.max = elements.manaInput.value;
       characters[4].playerStatus.mana.current = elements.manaInput.value;
     }
@@ -1164,6 +1167,9 @@ function stripChoicePayload(responseText) {
 }
 
 function renderMana() {
+  if(gameState.playerStatus.mana.max == 0){
+    hideElement(elements.manaContainer)
+  }
   const safeMana = Math.max(gameState.playerStatus.mana.current, 0);
   const manaPercent = safeMana / gameState.playerStatus.mana.max;
   const manaMovePercent = 100 - 100 * manaPercent;
@@ -1748,8 +1754,11 @@ function setButtonEvents() {
 function changeBackgroundImageTo(img) {
   if (img === "default") {
     document.body.style.backgroundImage = "none";
-  } else {
+  } else if (backgroundImages.includes(img)){
     document.body.style.backgroundImage = `url(imgs/background/${img})`;
+    console.log("Valid image! Img:" + img);
+  } else {
+    return;
   }
 }
 
