@@ -1,10 +1,10 @@
 :root {
   color-scheme: light;
   --bg: #eef2f7;
-  --panel: #ffffff;
-  --panel-muted: #f7f9fc;
+  --panel: #8f8067;
+  --panel-muted: #736958;
   --text: #172033;
-  --muted: #617089;
+  --muted: #ffffff;
   --line: #d8deea;
   --primary: #494949;
   --primary-dark: #363636;
@@ -136,6 +136,10 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.chat-window{
+  background-color: #e1e1e1;
+}
+
 .panel,
 .setup-panel {
   padding: 16px;
@@ -150,7 +154,7 @@ button:disabled {
   display: grid;
   gap: 10px;
   text-align: left;
-  background-color: #365778;
+  background-color: #2d2d2d;
 }
 
 .save-main {
@@ -371,7 +375,6 @@ button:disabled {
   max-height: min(62vh, 640px);
   padding: 18px;
   overflow-y: auto;
-  background: var(--panel-muted);
   white-space: pre-wrap;
   line-height: 1.55;
 }
@@ -417,7 +420,7 @@ button:disabled {
 .msg-did-you-know {
   margin-top: 10px;
   font-style: italic;
-  color: var(--muted);
+  color: #000000;
 }
 
 .character-panel {
@@ -622,7 +625,7 @@ button:disabled {
 }
 
 .character-panel-detail dt {
-  color: var(--muted);
+  color: #000;
   font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -727,8 +730,52 @@ button:disabled {
 
 #start-panel{
   text-align:center;
-  height:500px;
+  height:610px;
   align-content:center;
+  background-image: url('imgs/corkboard.png');
+  background-size:cover;
+  margin-bottom:15px;
+}
+
+.paper-torn {
+  /* Use clip-path to slice a zig-zag pattern at the bottom */
+  clip-path: polygon(
+    0% 0%,     /* Top-Left */
+    100% 0%,   /* Top-Right */
+    100% 90%,  /* Start of bottom jagged line */
+    95% 95%, 
+    90% 90%, 
+    85% 93%, 
+    80% 89%, 
+    75% 94%, 
+    70% 91%,
+    65% 95%, 
+    60% 88%, 
+    55% 92%, 
+    50% 90%, 
+    45% 94%, 
+    40% 89%,
+    35% 93%, 
+    30% 91%, 
+    25% 95%, 
+    20% 89%, 
+    15% 93%, 
+    10% 90%,
+    5% 94%, 
+    0% 89%     /* End of bottom jagged line */
+  );
+}
+
+#paper{
+  width:160px;
+  margin:auto;
+  padding:30px;
+  padding-top:10px;
+  background-color:tan;
+}
+
+#new-chat{
+  margin-bottom:15px;
 }
 
 .stone-border{
