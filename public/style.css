@@ -104,7 +104,7 @@ button:disabled {
 }
 
 #game-title {
-  background-color: var(--bg);
+  background-color: var(--panel);
   padding: 10px;
 }
 
@@ -776,6 +776,8 @@ button:disabled {
 
 #new-chat{
   margin-bottom:15px;
+  background-color:rgb(127, 113, 70);
+  border-radius:0px;
 }
 
 .stone-border{

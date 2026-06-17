@@ -758,7 +758,6 @@ function renderHealth() {
 
   elements.healthFill.style.transform = `translateX(-${movePercent}%)`;
   elements.healthLabel.textContent = `${safeHealth}/${gameState.playerStatus.health.max}`;
-  elements.healthLabel.classList.toggle("is-dark", movePercent > 40);
 }
 
 // save&load system helper
@@ -1207,7 +1206,6 @@ function renderMana() {
 
   elements.manaFill.style.transform = `translateX(-${manaMovePercent}%)`;
   elements.manaLabel.textContent = `${safeMana}/${gameState.playerStatus.mana.max}`;
-  elements.manaLabel.classList.toggle("is-dark", manaMovePercent > 40);
 }
 
 // update gameState
@@ -1404,7 +1402,9 @@ function enterGameEndState() {
   hideElement(elements.characterSelect);
   hideElement(elements.startGame);
   showElement(elements.healthContainer);
+  if(gameState.playerStatus.mana.max != 0){
   showElement(elements.manaContainer);
+  }
   showElement(elements.chatWindow);
   showElement(elements.chatActions);
   setChoiceControlsDisabled(true);
@@ -1425,7 +1425,9 @@ function enterGameEndState() {
 function restoreInteractiveChat() {
   showElement(elements.chatWindow);
   showElement(elements.healthContainer);
+  if(gameState.playerStatus.mana.max != 0){
   showElement(elements.manaContainer);
+  }
   showElement(elements.actionForm);
   showElement(elements.chatActions);
   setChoiceControlsDisabled(false);
@@ -1509,7 +1511,9 @@ function sendMessage() {
 
   // update UI
   showElement(elements.healthContainer);
+  if(gameState.playerStatus.mana.max != 0){
   showElement(elements.manaContainer);
+  }
   hideElement(elements.startGame);
   hideElement(elements.characterSelect);
   showElement(elements.actionForm);
