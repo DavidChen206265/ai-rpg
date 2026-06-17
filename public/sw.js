@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v3.098";
+const CACHE_VERSION = "v3.0997";
 const PRECACHE_CACHE = `ai-rpg-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `ai-rpg-runtime-${CACHE_VERSION}`;
 const ACTIVE_CACHES = new Set([PRECACHE_CACHE, RUNTIME_CACHE]);
