@@ -730,10 +730,13 @@ button:disabled {
 
 #start-panel{
   text-align:center;
-  height:610px;
+  width:100%;
+  height:auto;
+  aspect-ratio:1280 / 904;
   align-content:center;
   background-image: url('imgs/corkboard.png');
-  background-size:cover;
+  background-size:100% auto;
+  background-repeat: no-repeat;
   margin-bottom:15px;
 }
 
